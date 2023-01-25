@@ -445,7 +445,7 @@ class GeneratorTab:
 
     @staticmethod
     def update_history(text):
-        print('Update history file')
+        return
         with open(r'C:\Users\xjord\Desktop\PasswordManager\code\history', 'w') as file:
             file.write(text)
 

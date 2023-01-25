@@ -10,6 +10,8 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 connection = sqlite3.connect('data.db')
 cursor = connection.cursor()
 
+ # todo change all execute commands to be with commands
+
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -19,7 +21,6 @@ class LandingPage(customtkinter.CTk):
         self.width = 480
         self.height = 720
         self.geometry(f"{self.width}x{self.height}")
-        # app.resizable(width=False, height=False)
         self.title('Password Manager')
         self.tabview_width = self.width - 50
         self.tabview_height = self.height - 30
@@ -54,7 +55,7 @@ class LandingPage(customtkinter.CTk):
         self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
         self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text='Log in',
-                                                    command=lambda: self.login_button_event(self.warning_label))
+                                                    command=self.check_valid_log_info)
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
@@ -67,7 +68,7 @@ class LandingPage(customtkinter.CTk):
         self.password.grid(row=1, column=0, pady=(0, 20), sticky="ew")
         self.login_button.grid(row=2, column=0, pady=(0, 20), sticky="ew")
         self.verify_label.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.new_account_button.grid(row=4, column=0, pady=(200, 0), sticky="ew")
+        self.new_account_button.grid(row=4, column=0, pady=(180, 0), sticky="ew")
 
     def account_setup(self):
         self.login_frame.destroy()
@@ -89,6 +90,23 @@ class LandingPage(customtkinter.CTk):
         self.new_master_password_verify.grid(row=3, column=0, pady=(0, 20), sticky="ew")
         self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
 
+    def check_valid_log_info(self):
+        username = self.username.get()
+        password = self.password.get()
+
+        cursor.execute('SELECT username, master_password FROM Person WHERE username = ?', [username])
+        username_row = cursor.fetchone()
+        if username_row is None:
+            self.warning_label.configure(text='Incorrect username or password.')
+        else:
+            if password != username_row[1]:
+                self.warning_label.configure(text='Incorrect username or password.')
+            elif password == username_row[1]:
+                self.landing_page_tabview.configure(state='normal')
+                self.landing_page_tabview.set("Generator")
+                self.login_frame.destroy()
+                self.warning_label.destroy()
+
     def check_valid_new_account(self):
         username = self.new_username.get()
         email = self.new_email.get()
@@ -109,9 +127,9 @@ class LandingPage(customtkinter.CTk):
             self.warning_label.configure(text='Passwords do not match.')
             return
 
-        cursor.execute('SELECT username FROM Person WHERE username = ?', username)
+        cursor.execute('SELECT username FROM Person WHERE username = ?', [username])
         username_row = cursor.fetchone()
-        cursor.execute('SELECT email FROM Person WHERE email = ?', email)
+        cursor.execute('SELECT email FROM Person WHERE email = ?', [email])
         email_row = cursor.fetchone()
         connection.commit()
 
@@ -153,26 +171,17 @@ class LandingPage(customtkinter.CTk):
 
     @staticmethod
     def create_person_table():
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Person (
-            username TEXT,
-            email TEXT,
-            master_password TEXT
-        )
-        """)
-        connection.commit()
-
-    def login_button_event(self, warning_label):
-        username = self.username.get()
-        password = self.password.get()
-        if username == '':
-            pass
-        elif username == 'a' and password == 'a':
-            self.landing_page_tabview.configure(state='normal')
-            self.landing_page_tabview.set("Generator")
-            self.login_frame.destroy()
+        with sqlite3.connect('data.db') as db:
+            db.execute("""
+            CREATE TABLE IF NOT EXISTS Person (
+                username TEXT,
+                email TEXT,
+                master_password TEXT
+            )
+            """)
 
 
 if __name__ == '__main__':
     app = LandingPage()
+    app.resizable(width=False, height=False)
     app.mainloop()
