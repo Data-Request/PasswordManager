@@ -1,0 +1,6 @@
+# Colors
+RED = '#EA3F3F'
+BLUE = '#0087F4'
+DARK_GRAY = '#242424'
+LIGHT_GRAY = '#2B2B2B'
+WHITE = '#ffffff'
