@@ -1,3 +1,5 @@
+import os
+import hashlib
 import tkinter
 import customtkinter
 import sqlite3
@@ -94,18 +96,20 @@ class LandingPage(customtkinter.CTk):
         username = self.username.get()
         password = self.password.get()
 
-        cursor.execute('SELECT username, master_password FROM Person WHERE username = ?', [username])
-        username_row = cursor.fetchone()
-        if username_row is None:
-            self.warning_label.configure(text='Incorrect username or password.')
+        cursor.execute('SELECT username, salt, key FROM Person WHERE username = ?', [username])
+        user_account = cursor.fetchone()
+
+        if user_account is None:
+            self.warning_label.configure(text='Incorrect username or password. 1')
         else:
-            if password != username_row[1]:
-                self.warning_label.configure(text='Incorrect username or password.')
-            elif password == username_row[1]:
+            current_key = self.generate_key(user_account[1], password)
+            if current_key == user_account[2]:
                 self.landing_page_tabview.configure(state='normal')
                 self.landing_page_tabview.set("Generator")
                 self.login_frame.destroy()
                 self.warning_label.destroy()
+            else:
+                self.warning_label.configure(text='Incorrect username or password. 2')
 
     def check_valid_new_account(self):
         username = self.new_username.get()
@@ -127,26 +131,37 @@ class LandingPage(customtkinter.CTk):
             self.warning_label.configure(text='Passwords do not match.')
             return
 
-        cursor.execute('SELECT username FROM Person WHERE username = ?', [username])
-        username_row = cursor.fetchone()
-        cursor.execute('SELECT email FROM Person WHERE email = ?', [email])
-        email_row = cursor.fetchone()
-        connection.commit()
+        with sqlite3.connect('data.db') as db:
+            db.execute('SELECT username FROM Person WHERE username = ?', [username])
+            username_row = cursor.fetchone()
+            db.execute('SELECT email FROM Person WHERE email = ?', [email])
+            email_row = cursor.fetchone()
 
         if username_row is None:
             if email_row is None:
-                command = 'INSERT INTO Person VALUES (?,?,?)'
-                cursor.execute(command, (username, email, master_password))
-                connection.commit()
+                salt = os.urandom(32)
+                key = self.generate_key(salt, master_password)
+                with sqlite3.connect('data.db') as db:
+                    db.execute('INSERT INTO Person VALUES (?,?,?,?)', (username, email, salt, key))
                 self.new_account_frame.destroy()
-                self.create_log_in_widgets()
                 self.warning_label.configure(text='')
+                self.create_log_in_widgets()
             else:
                 self.new_email.configure(text_color=RED)
                 self.warning_label.configure(text='Email already in use.')
         else:
             self.new_username.configure(text_color=RED)
             self.warning_label.configure(text='Username taken.')
+
+    @staticmethod
+    def generate_key(salt, password):
+        key = hashlib.pbkdf2_hmac(
+            'sha256',  # The hash digest algorithm for HMAC
+            password.encode('utf-8'),  # Convert the password to bytes
+            salt,  # Provide the salt
+            100000  # It is recommended to use at least 100,000 iterations of SHA-256
+        )
+        return key
 
     def reset_new_account_text_color(self):
         self.new_username.configure(text_color=WHITE)
@@ -176,7 +191,8 @@ class LandingPage(customtkinter.CTk):
             CREATE TABLE IF NOT EXISTS Person (
                 username TEXT,
                 email TEXT,
-                master_password TEXT
+                salt TEXT,
+                key TEXT
             )
             """)
 
