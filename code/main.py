@@ -81,7 +81,7 @@ class LandingPage(customtkinter.CTk):
         self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Master Password")
         self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Renter Master Password")
         self.continue_button = customtkinter.CTkButton(master=self.new_account_frame, text="Continue",
-                                                       command=self.check_valid_new_account)
+                                                       command=self.create_new_account)
         # New Account Placement
         self.new_account_frame.place(relx=0.5, rely=0.3, anchor=tkinter.N)
         self.new_account_frame.grid_columnconfigure(0, weight=1)
@@ -111,7 +111,7 @@ class LandingPage(customtkinter.CTk):
             else:
                 self.warning_label.configure(text='Incorrect username or password. 2')
 
-    def check_valid_new_account(self):
+    def create_new_account(self):
         username = self.new_username.get()
         email = self.new_email.get()
         master_password = self.new_master_password.get()
@@ -142,7 +142,7 @@ class LandingPage(customtkinter.CTk):
                 salt = os.urandom(32)
                 key = self.generate_key(salt, master_password)
                 with sqlite3.connect('data.db') as db:
-                    db.execute('INSERT INTO Person VALUES (?,?,?,?)', (username, email, salt, key))
+                    db.execute('INSERT INTO Person (username, email, salt, key) VALUES (?,?,?,?)', (username, email, salt, key))
                 self.new_account_frame.destroy()
                 self.warning_label.configure(text='')
                 self.create_log_in_widgets()
@@ -189,6 +189,7 @@ class LandingPage(customtkinter.CTk):
         with sqlite3.connect('data.db') as db:
             db.execute("""
             CREATE TABLE IF NOT EXISTS Person (
+                account_id INTEGER PRIMARY KEY,
                 username TEXT,
                 email TEXT,
                 salt TEXT,

@@ -258,7 +258,6 @@ class GeneratorTab:
         self.lowercase.select()
         self.generate_password()
 
-
     def update_length(self, *args):
         text = 'Length:'
         length = int(self.length_slider.get())
@@ -445,7 +444,5 @@ class GeneratorTab:
 
     @staticmethod
     def update_history(text):
-        return
-        with open(r'C:\Users\xjord\Desktop\PasswordManager\code\history', 'w') as file:
-            file.write(text)
+        print('update history')
 
