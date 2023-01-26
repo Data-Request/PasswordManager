@@ -1,7 +1,10 @@
 import tkinter
 import customtkinter
 
-class Settings:
+MAX_HISTORY_ENTRIES = 5
+
+
+class SettingsTab:
     def __init__(self, landing_tabview, account_id):
         super().__init__()
         self.landing_tabview = landing_tabview

@@ -3,9 +3,9 @@ import hashlib
 import tkinter
 import customtkinter
 import sqlite3
-from generator import Generator
-from history import History
-from settings import Settings
+from generator import GeneratorTab
+from history import HistoryTab
+from settings import SettingsTab
 from colors import *
 from PIL import Image
 
@@ -82,9 +82,9 @@ class LandingPage(customtkinter.CTk):
         self.landing_page_tabview.set("History")
         self.login_frame.destroy()
         self.warning_label.destroy()
-        Generator(self.landing_page_tabview, self.width, self.height, self.account_id)
-        History(self.landing_page_tabview, self.width, self.height, self.account_id)
-        Settings(self.landing_page_tabview, self.account_id)
+        GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        SettingsTab(self.landing_page_tabview, self.account_id)
 
     def account_setup(self):
         self.login_frame.destroy()
