@@ -148,14 +148,14 @@ class GeneratorTab:
         self.extras_slider_frame.grid_rowconfigure(0, weight=1)
         self.min_numbers_label = customtkinter.CTkLabel(master=self.extras_slider_frame)
         self.min_numbers_label.grid(row=0, column=0, sticky="w")
-        self.min_numbers_slider = customtkinter.CTkSlider(master=self.extras_slider_frame,
+        self.min_numbers_slider = customtkinter.CTkSlider(master=self.extras_slider_frame, state='disabled',
                                                           command=self.update_min_number,
                                                           from_=self.min_min_num, to=self.max_min_num,
                                                           number_of_steps=self.max_min_num - self.min_min_num)
         self.min_numbers_slider.grid(row=0, column=1, sticky="e")
         self.min_symbol_label = customtkinter.CTkLabel(master=self.extras_slider_frame)
         self.min_symbol_label.grid(row=1, column=0, pady=(15, 0), columnspan=1, sticky="w")
-        self.min_symbol_slider = customtkinter.CTkSlider(master=self.extras_slider_frame,
+        self.min_symbol_slider = customtkinter.CTkSlider(master=self.extras_slider_frame, state='disabled',
                                                          command=self.update_min_special,
                                                          from_=self.min_symbols_num, to=self.max_symbols_num,
                                                          number_of_steps=self.max_symbols_num - self.min_symbols_num)
@@ -245,6 +245,7 @@ class GeneratorTab:
         self.password_textbox.configure(state='disabled')
 
     def reset_word_separator_box(self, *args):
+        # Only allows one character to be input into textbox
         self.word_separator_textbox.delete('1.0', 'end')
 
     def check_valid_checkbox(self):
@@ -255,11 +256,17 @@ class GeneratorTab:
             self.generate_password()
             return
         if self.numbers.get() == 1:
+            self.min_numbers_slider.configure(state='normal')
             self.generate_password()
             return
+        else:
+            self.min_numbers_slider.configure(state='disabled')
         if self.special_characters.get() == 1:
+            self.min_symbol_slider.configure(state='normal')
             self.generate_password()
             return
+        else:
+            self.min_symbol_slider.configure(state='disabled')
         self.lowercase.select()
         self.generate_password()
 
