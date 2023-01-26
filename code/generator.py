@@ -6,16 +6,16 @@ import string
 from colors import *
 from PIL import Image
 from datetime import datetime
+from settings import MAX_HISTORY_ENTRIES
 
 
-# todo add limit to password history
 # todo add in consecutive lowercase letter, numbers, and sequential numbers/ symbols to generate password
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
 # todo look into generating passphrase on word separator input
 
 
-class Generator:
+class GeneratorTab:
     def __init__(self, landing_tabview, width, height, account_id):
         super().__init__()
 
@@ -439,10 +439,35 @@ class Generator:
     def update_history(self):
         now = datetime.now()
         date = now.strftime("%d/%m/%Y %H:%M:%S")
-        if self.password_tabview.get() == 'Password' or self.password_tabview.get() == 'Passphrase':
-            key = self.password_textbox.get('0.0', 'end')
-            with sqlite3.connect('data.db') as db:
-                db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, date))
+        key = self.password_textbox.get('0.0', 'end').strip()
+
+        if self.password_tabview.get() != 'Password' and self.password_tabview.get() != 'Passphrase':
+            return
+
+        if self.check_if_already_entered(key):
+            return
+
+        self.check_if_max_history_entries()
+        with sqlite3.connect('data.db') as db:
+            db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, date))
+
+    def check_if_already_entered(self, key):
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
+            history = cursor.fetchall()
+            print(f'Key: {key}')
+            for row in history:
+                print(row[1])
+                if row[1] == key:
+                    return True
+            return False
+
+    def check_if_max_history_entries(self):
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
+            history = cursor.fetchall()
+            if len(history) == MAX_HISTORY_ENTRIES:
+                db.execute('Delete FROM History WHERE timestamp = ?', [history[0][2]])
 
     def update_password_strength(self):
         return

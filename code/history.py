@@ -47,7 +47,7 @@ class HistoryTab:
                                                          image=self.copy_image, fg_color=BLUE,
                                                          command=functools.partial(self.copy_text, index), width=self.button_width,
                                                          height=self.button_height)
-            self.history_buttons[index].grid(row=index, column=0, sticky="w")
+            self.history_buttons[index].grid(row=index, column=0, pady=(0, 10), sticky="w")
             self.copy_buttons[index].grid(row=index, column=1, sticky="e")
 
             self.history_buttons[index].insert('end', history_row[index][1])
