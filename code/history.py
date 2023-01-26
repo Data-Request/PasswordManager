@@ -7,7 +7,7 @@ from colors import *
 from settings import MAX_HISTORY_ENTRIES
 
 
-# todo find a way to update history on saved data
+# todo fix delete button
 
 class HistoryTab:
     def __init__(self, landing_tabview, width, height, account_id):

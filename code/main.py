@@ -3,6 +3,7 @@ import hashlib
 import tkinter
 import customtkinter
 import sqlite3
+from vault import VaultTab
 from generator import GeneratorTab
 from history import HistoryTab
 from settings import SettingsTab
@@ -33,7 +34,8 @@ class LandingPage(customtkinter.CTk):
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=BLUE,
-                                                             border_width=3, border_color=WHITE, state='disabled', text_color=WHITE)
+                                                             border_width=3, border_color=WHITE, state='disabled',
+                                                             text_color=WHITE, command=self.tabview_clicked_event)
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
         self.landing_page_tabview.add('Vault')
         self.landing_page_tabview.add("Generator")
@@ -78,13 +80,18 @@ class LandingPage(customtkinter.CTk):
         self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
         self.new_account_button.grid(row=6, column=0, pady=(120, 0), sticky="ew")
 
+    def tabview_clicked_event(self):
+        if self.landing_page_tabview.get() == 'History':
+            self.history.create_buttons()
+
     def initialize_all_tabs(self):
         self.landing_page_tabview.configure(state='normal')
         self.landing_page_tabview.set("History")
         self.login_frame.destroy()
         self.warning_label.destroy()
+        VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
-        HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         SettingsTab(self.landing_page_tabview, self.account_id)
 
     def account_setup(self):
