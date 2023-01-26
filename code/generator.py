@@ -1,10 +1,10 @@
 import tkinter
 import customtkinter
+import sqlite3
 import secrets
 import string
 from colors import *
 from PIL import Image
-
 
 # todo add in consecutive lowercase letter, numbers, and sequential numbers/ symbols to generate password
 # todo password strength fix
@@ -13,10 +13,11 @@ from PIL import Image
 
 
 class GeneratorTab:
-    def __init__(self, landing_tabview, width, height):
+    def __init__(self, landing_tabview, width, height, account_id):
         super().__init__()
 
         # General Setup
+        self.account_id = account_id
         self.landing_tabview = landing_tabview
         self.password_tabview_width = width - 72
         self.password_tabview_height = height - 300
@@ -224,12 +225,16 @@ class GeneratorTab:
         # Create Username Checkbox Frame
         self.username_checkbox_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Username'))
         self.random_word_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame, text='Random word',
-                                                              command=self.generate_random_word, state='disabled')
+                                                              command=self.random_word_clicked, width=150,
+                                                              state='disabled')
+        self.sub_address_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame, text='Email sub-address',
+                                                              command=self.sub_address_clicked, width=150)
         # Password Checkbox Frame Placement
-        self.username_checkbox_frame.grid(row=0, column=0, padx=(50, 50), pady=(20, 0), sticky='n')
+        self.username_checkbox_frame.grid(row=0, column=0, padx=(90, 0), pady=(40, 0), sticky='n')
         self.username_checkbox_frame.grid_columnconfigure(1, weight=1)
-        self.username_checkbox_frame.grid_rowconfigure(1, weight=1)
-        self.random_word_checkbox.grid(row=0, column=0, padx=(40, 0), pady=10, sticky="n")
+        self.username_checkbox_frame.grid_rowconfigure(2, weight=1)
+        self.random_word_checkbox.grid(row=0, column=0, padx=(40, 0), pady=20, sticky="n")
+        self.sub_address_checkbox.grid(row=1, column=0, padx=(40, 0), pady=20, sticky="n")
 
         # Set Defaults
         self.random_word_checkbox.select()
@@ -257,6 +262,18 @@ class GeneratorTab:
             return
         self.lowercase.select()
         self.generate_password()
+
+    def sub_address_clicked(self):
+        self.random_word_checkbox.deselect()
+        self.generate_sub_address()
+        self.random_word_checkbox.configure(state='normal')
+        self.sub_address_checkbox.configure(state='disabled')
+
+    def random_word_clicked(self):
+        self.sub_address_checkbox.deselect()
+        self.generate_random_word()
+        self.sub_address_checkbox.configure(state='normal')
+        self.random_word_checkbox.configure(state='disabled')
 
     def update_length(self, *args):
         text = 'Length:'
@@ -311,7 +328,10 @@ class GeneratorTab:
         elif self.password_tabview.get() == 'Passphrase':
             self.generate_passphrase()
         else:
-            self.generate_random_word()
+            if self.random_word_checkbox.get() == 1:
+                self.generate_random_word()
+            else:
+                self.generate_sub_address()
 
     def change_main_text_box(self, text):
         self.password_textbox.configure(state='normal')
@@ -351,7 +371,7 @@ class GeneratorTab:
         random_word = ''
         random_numbers = ''
 
-        for i in range(1, secrets.randbelow(5)):
+        for i in range(0, secrets.randbelow(5)):
             random_numbers += str(secrets.randbelow(10))
 
         random_index = secrets.randbelow(58110)
@@ -362,6 +382,21 @@ class GeneratorTab:
 
         self.change_main_text_box(random_word)
         self.update_history(random_word)
+        self.copy_main_textbox()
+
+    def generate_sub_address(self):
+        char_list = string.ascii_lowercase + string.digits
+        extra_letters = ''
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT email FROM Person WHERE account_id = ?', [self.account_id])
+            email = cursor.fetchone()[0]
+            email = email.split('@')
+            for i in range(0, 8):
+                character = secrets.choice(char_list)
+                extra_letters += character
+        sub_address = email[0] + '+' + extra_letters + '@' + email[1]
+        self.change_main_text_box(sub_address)
+        self.update_history(sub_address)
         self.copy_main_textbox()
 
     def generate_password(self):

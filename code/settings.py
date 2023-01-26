@@ -3,11 +3,11 @@ import customtkinter
 
 
 class Settings:
-    def __init__(self, game_type_tabview):
+    def __init__(self, landing_tabview, account_id):
         super().__init__()
-        self.game_type_tabview = game_type_tabview
+        self.landing_tabview = landing_tabview
 
-        self.settings_frame = customtkinter.CTkFrame(master=self.game_type_tabview.tab('Settings'), fg_color="transparent")
+        self.settings_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Settings'), fg_color="transparent")
         self.appearance_mode_label = customtkinter.CTkLabel(master=self.settings_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_option_menu = customtkinter.CTkOptionMenu(self.settings_frame, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)

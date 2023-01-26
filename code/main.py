@@ -46,18 +46,18 @@ class LandingPage(customtkinter.CTk):
         self.warning_label.place(relx=0.5, rely=1, anchor=tkinter.S)
 
         # Initialize
+        self.account_id = None
         self.create_log_in_widgets()
-        self.generator = GeneratorTab(self.landing_page_tabview, self.width, self.height)
-        self.settings = Settings(self.landing_page_tabview)
 
     def create_log_in_widgets(self):
         # Create Login Button Frame
         self.login_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
-        self.verify_text = tkinter.StringVar(value="Your vault is locked. Verify your identity to continue.")
+        self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="n")
         self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
+        self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="n")
         self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text='Log in',
-                                                    command=self.check_valid_log_info)
+                                                    command=self.validate_log_info)
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
@@ -65,12 +65,23 @@ class LandingPage(customtkinter.CTk):
         # Placement of all items
         self.login_frame.place(relx=0.5, rely=0.3, anchor=tkinter.N)
         self.login_frame.grid_columnconfigure(0, weight=1)
-        self.login_frame.grid_rowconfigure(5, weight=1)
-        self.username.grid(row=0, column=0, pady=(0, 20), sticky="ew")
-        self.password.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-        self.login_button.grid(row=2, column=0, pady=(0, 20), sticky="ew")
-        self.verify_label.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.new_account_button.grid(row=4, column=0, pady=(180, 0), sticky="ew")
+        self.login_frame.grid_rowconfigure(6, weight=1)
+        self.username_label.grid(row=0, column=0, sticky="ew")
+        self.username.grid(row=1, column=0, pady=(0, 20), sticky="ew")
+        self.password_label.grid(row=2, column=0, sticky="ew")
+        self.password.grid(row=3, column=0, pady=(0, 20), sticky="ew")
+        self.login_button.grid(row=4, column=0, pady=(0, 20), sticky="ew")
+        self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
+        self.new_account_button.grid(row=6, column=0, pady=(120, 0), sticky="ew")
+
+    def initialize_all_tabs(self):
+        self.landing_page_tabview.configure(state='normal')
+        self.landing_page_tabview.set("Generator")
+        self.login_frame.destroy()
+        self.warning_label.destroy()
+        self.generator = GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        self.settings = Settings(self.landing_page_tabview, self.account_id)
+
 
     def account_setup(self):
         self.login_frame.destroy()
@@ -92,22 +103,20 @@ class LandingPage(customtkinter.CTk):
         self.new_master_password_verify.grid(row=3, column=0, pady=(0, 20), sticky="ew")
         self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
 
-    def check_valid_log_info(self):
+    def validate_log_info(self):
         username = self.username.get()
         password = self.password.get()
 
-        cursor.execute('SELECT username, salt, key FROM Person WHERE username = ?', [username])
+        cursor.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
         user_account = cursor.fetchone()
 
         if user_account is None:
             self.warning_label.configure(text='Incorrect username or password. 1')
         else:
-            current_key = self.generate_key(user_account[1], password)
-            if current_key == user_account[2]:
-                self.landing_page_tabview.configure(state='normal')
-                self.landing_page_tabview.set("Generator")
-                self.login_frame.destroy()
-                self.warning_label.destroy()
+            current_key = self.generate_key(user_account[2], password)
+            if current_key == user_account[3]:
+                self.account_id = user_account[0]
+                self.initialize_all_tabs()
             else:
                 self.warning_label.configure(text='Incorrect username or password. 2')
 
