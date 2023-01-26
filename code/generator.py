@@ -249,25 +249,18 @@ class GeneratorTab:
         self.word_separator_textbox.delete('1.0', 'end')
 
     def check_valid_checkbox(self):
-        if self.uppercase.get() == 1:
-            self.generate_password()
-            return
-        if self.lowercase.get == 1:
-            self.generate_password()
-            return
         if self.numbers.get() == 1:
             self.min_numbers_slider.configure(state='normal')
-            self.generate_password()
-            return
         else:
             self.min_numbers_slider.configure(state='disabled')
         if self.special_characters.get() == 1:
             self.min_symbol_slider.configure(state='normal')
-            self.generate_password()
-            return
         else:
             self.min_symbol_slider.configure(state='disabled')
-        self.lowercase.select()
+
+        if self.uppercase.get() == 0 and self.lowercase.get() == 0 and self.numbers.get() == 0 and self.special_characters.get() == 0:
+            self.lowercase.select()
+
         self.generate_password()
 
     def sub_address_clicked(self):
