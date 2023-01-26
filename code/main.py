@@ -59,12 +59,13 @@ class LandingPage(customtkinter.CTk):
         self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
         self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
-        self.login_button = customtkinter.CTkButton(master=self.login_frame, text='                             Log in', image=self.key_image,
+        self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
+                                                    text='                             Log in', image=self.key_image,
                                                     compound='left', command=self.validate_log_info, anchor='w')
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
-                                                          command=self.account_setup)
+                                                          text_color=BLACK, command=self.account_setup)
         # Placement of all items
         self.login_frame.place(relx=0.5, rely=0.3, anchor=tkinter.N)
         self.login_frame.grid_columnconfigure(0, weight=1)

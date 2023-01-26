@@ -27,7 +27,7 @@ class GeneratorTab:
         self.button_width = 25
         self.button_height = 25
         self.main_textbox_width = width - 115
-        self.main_textbox_height = 110
+        self.main_textbox_height = 107
 
         # Password Variables
         self.min_password_length = 8
@@ -438,7 +438,7 @@ class GeneratorTab:
 
     def update_history(self):
         now = datetime.now()
-        date = now.strftime("%d/%m/%Y %H:%M:%S")
+        date = now.strftime("%c")
         key = self.password_textbox.get('0.0', 'end').strip()
 
         if self.password_tabview.get() != 'Password' and self.password_tabview.get() != 'Passphrase':
@@ -455,9 +455,7 @@ class GeneratorTab:
         with sqlite3.connect('data.db') as db:
             cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
             history = cursor.fetchall()
-            print(f'Key: {key}')
             for row in history:
-                print(row[1])
                 if row[1] == key:
                     return True
             return False
