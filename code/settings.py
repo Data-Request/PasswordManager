@@ -1,7 +1,6 @@
 import tkinter
 import customtkinter
 
-
 class Settings:
     def __init__(self, landing_tabview, account_id):
         super().__init__()

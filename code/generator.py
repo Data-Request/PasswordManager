@@ -5,14 +5,17 @@ import secrets
 import string
 from colors import *
 from PIL import Image
+from datetime import datetime
 
+
+# todo add limit to password history
 # todo add in consecutive lowercase letter, numbers, and sequential numbers/ symbols to generate password
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
 # todo look into generating passphrase on word separator input
 
 
-class GeneratorTab:
+class Generator:
     def __init__(self, landing_tabview, width, height, account_id):
         super().__init__()
 
@@ -56,15 +59,14 @@ class GeneratorTab:
         self.num_or_symbol_used_in_middle = 0
 
         # Create Password Textbox
-        self.password_textbox = customtkinter.CTkTextbox(master=self.landing_tabview.tab('Generator'),
+        self.password_textbox = customtkinter.CTkTextbox(master=self.landing_tabview.tab('Generator'), state='disabled',
                                                          width=self.main_textbox_width, font=('Arial', 16),
                                                          height=self.main_textbox_height, corner_radius=15)
         self.password_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
-        self.password_textbox.configure(state='disabled')
 
         # Copy / Generate Password Buttons
         self.copy_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
-        self.regenerate_image = customtkinter.CTkImage(Image.open(r'C:\Users\xjord\Desktop\PasswordManager\images\recycle-transparent-25.png'), size=(20, 20))
+        self.regenerate_image = customtkinter.CTkImage(Image.open(r'C:\Users\xjord\Desktop\PasswordManager\images\arrows-spin-solid.png'), size=(20, 20))
 
         self.copy_gen_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'), fg_color="transparent")
         self.copy_buttons = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.copy_image, fg_color=BLUE,
@@ -72,10 +74,10 @@ class GeneratorTab:
         self.regenerate_buttons = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.regenerate_image, fg_color=BLUE,
                                                           command=self.update_main_textbox, width=self.button_width, height=self.button_height)
         # Copy / Generate Placement
-        self.copy_gen_button_frame.place(relx=0.96, rely=0.05, anchor=tkinter.N)
+        self.copy_gen_button_frame.place(relx=0.96, rely=0.04, anchor=tkinter.N)
         self.copy_gen_button_frame.grid_columnconfigure(0, weight=1)
         self.copy_gen_button_frame.grid_rowconfigure(2, weight=1)
-        self.copy_buttons.grid(row=0, column=0, sticky="n")
+        self.copy_buttons.grid(row=0, column=0, pady=(0, 10), sticky="n")
         self.regenerate_buttons.grid(row=1, column=0, sticky="n")
 
         # Password Strength
@@ -320,6 +322,7 @@ class GeneratorTab:
     def copy_main_textbox(self):
         self.password_textbox.clipboard_clear()
         self.password_textbox.clipboard_append(self.password_textbox.get('0.0', 'end'))
+        self.update_history()
 
     def update_main_textbox(self):
         if self.password_tabview.get() == 'Password':
@@ -364,8 +367,6 @@ class GeneratorTab:
                         current_passphrase += f'{current_seperator}{current_word}'
 
         self.change_main_text_box(current_passphrase)
-        self.update_history(current_passphrase)
-        self.copy_main_textbox()
 
     def generate_random_word(self):
         random_word = ''
@@ -381,8 +382,6 @@ class GeneratorTab:
             random_word += f'{current_word}{random_numbers}'
 
         self.change_main_text_box(random_word)
-        self.update_history(random_word)
-        self.copy_main_textbox()
 
     def generate_sub_address(self):
         char_list = string.ascii_lowercase + string.digits
@@ -396,8 +395,6 @@ class GeneratorTab:
                 extra_letters += character
         sub_address = email[0] + '+' + extra_letters + '@' + email[1]
         self.change_main_text_box(sub_address)
-        self.update_history(sub_address)
-        self.copy_main_textbox()
 
     def generate_password(self):
         self.password_length = int(self.length_slider.get())
@@ -436,11 +433,16 @@ class GeneratorTab:
                 self.symbol_used_number += 1
                 if i != 1 or i != self.password_length:
                     self.num_or_symbol_used_in_middle += 1
-
         self.password = password
         self.change_main_text_box(password)
-        self.update_history(password)
-        self.copy_main_textbox()
+
+    def update_history(self):
+        now = datetime.now()
+        date = now.strftime("%d/%m/%Y %H:%M:%S")
+        if self.password_tabview.get() == 'Password' or self.password_tabview.get() == 'Passphrase':
+            key = self.password_textbox.get('0.0', 'end')
+            with sqlite3.connect('data.db') as db:
+                db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, date))
 
     def update_password_strength(self):
         return
@@ -476,8 +478,3 @@ class GeneratorTab:
         print(f'Total Score: {total_score}')
         print(f'Strength Bar Set Value to: {total_score // 100}')
         self.strength_bar.set(total_score // 100)
-
-    @staticmethod
-    def update_history(text):
-        print('update history')
-

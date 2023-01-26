@@ -3,14 +3,14 @@ import hashlib
 import tkinter
 import customtkinter
 import sqlite3
-from generator import GeneratorTab
+from generator import Generator
+from history import History
 from settings import Settings
 from colors import *
+from PIL import Image
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
-connection = sqlite3.connect('data.db')
-cursor = connection.cursor()
 
  # todo change all execute commands to be with commands
 
@@ -33,7 +33,7 @@ class LandingPage(customtkinter.CTk):
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=BLUE,
-                                                             border_width=3, border_color=WHITE, state='disabled')
+                                                             border_width=3, border_color=WHITE, state='disabled', text_color=WHITE)
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
         self.landing_page_tabview.add('Vault')
         self.landing_page_tabview.add("Generator")
@@ -48,16 +48,19 @@ class LandingPage(customtkinter.CTk):
         # Initialize
         self.account_id = None
         self.create_log_in_widgets()
+        self.create_person_table()
+        self.create_history_table()
 
     def create_log_in_widgets(self):
         # Create Login Button Frame
         self.login_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
-        self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="n")
+        self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="w")
         self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
-        self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="n")
+        self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
         self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
-        self.login_button = customtkinter.CTkButton(master=self.login_frame, text='Log in',
-                                                    command=self.validate_log_info)
+        self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
+        self.login_button = customtkinter.CTkButton(master=self.login_frame, text='                             Log in', image=self.key_image,
+                                                    compound='left', command=self.validate_log_info, anchor='w')
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
@@ -76,12 +79,12 @@ class LandingPage(customtkinter.CTk):
 
     def initialize_all_tabs(self):
         self.landing_page_tabview.configure(state='normal')
-        self.landing_page_tabview.set("Generator")
+        self.landing_page_tabview.set("History")
         self.login_frame.destroy()
         self.warning_label.destroy()
-        self.generator = GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
-        self.settings = Settings(self.landing_page_tabview, self.account_id)
-
+        Generator(self.landing_page_tabview, self.width, self.height, self.account_id)
+        History(self.landing_page_tabview, self.width, self.height, self.account_id)
+        Settings(self.landing_page_tabview, self.account_id)
 
     def account_setup(self):
         self.login_frame.destroy()
@@ -104,30 +107,28 @@ class LandingPage(customtkinter.CTk):
         self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
 
     def validate_log_info(self):
-        username = self.username.get()
+        username = self.username.get().lower()
         password = self.password.get()
 
-        cursor.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
-        user_account = cursor.fetchone()
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
+            user_account = cursor.fetchone()
 
         if user_account is None:
-            self.warning_label.configure(text='Incorrect username or password. 1')
+            self.warning_label.configure(text='Incorrect username or password.')
         else:
             current_key = self.generate_key(user_account[2], password)
             if current_key == user_account[3]:
                 self.account_id = user_account[0]
                 self.initialize_all_tabs()
             else:
-                self.warning_label.configure(text='Incorrect username or password. 2')
+                self.warning_label.configure(text='Incorrect username or password.')
 
     def create_new_account(self):
-        username = self.new_username.get()
-        email = self.new_email.get()
+        username = self.new_username.get().lower()
+        email = self.new_email.get().lower()
         master_password = self.new_master_password.get()
         master_password_verify = self.new_master_password_verify.get()
-
-        # todo remove once finish testing
-        self.create_person_table()
 
         # Reset in case method is called twice in a row for different reasons
         self.reset_new_account_text_color()
@@ -141,9 +142,9 @@ class LandingPage(customtkinter.CTk):
             return
 
         with sqlite3.connect('data.db') as db:
-            db.execute('SELECT username FROM Person WHERE username = ?', [username])
+            cursor = db.execute('SELECT username FROM Person WHERE username = ?', [username])
             username_row = cursor.fetchone()
-            db.execute('SELECT email FROM Person WHERE email = ?', [email])
+            cursor = db.execute('SELECT email FROM Person WHERE email = ?', [email])
             email_row = cursor.fetchone()
 
         if username_row is None:
@@ -161,16 +162,6 @@ class LandingPage(customtkinter.CTk):
         else:
             self.new_username.configure(text_color=RED)
             self.warning_label.configure(text='Username taken.')
-
-    @staticmethod
-    def generate_key(salt, password):
-        key = hashlib.pbkdf2_hmac(
-            'sha256',  # The hash digest algorithm for HMAC
-            password.encode('utf-8'),  # Convert the password to bytes
-            salt,  # Provide the salt
-            100000  # It is recommended to use at least 100,000 iterations of SHA-256
-        )
-        return key
 
     def reset_new_account_text_color(self):
         self.new_username.configure(text_color=WHITE)
@@ -205,6 +196,28 @@ class LandingPage(customtkinter.CTk):
                 key TEXT
             )
             """)
+
+    @staticmethod
+    def create_history_table():
+        with sqlite3.connect('data.db') as db:
+            db.execute("""
+            CREATE TABLE IF NOT EXISTS History (
+                account_id INTEGER,
+                key TEXT,
+                timestamp TEXT,
+                FOREIGN KEY(account_id) REFERENCES Person (account_id)
+            )
+            """)
+
+    @staticmethod
+    def generate_key(salt, password):
+        key = hashlib.pbkdf2_hmac(
+            'sha256',  # The hash digest algorithm for HMAC
+            password.encode('utf-8'),  # Convert the password to bytes
+            salt,  # Provide the salt
+            100000  # It is recommended to use at least 100,000 iterations of SHA-256
+        )
+        return key
 
 
 if __name__ == '__main__':
