@@ -9,6 +9,7 @@ from history import HistoryTab
 from settings import SettingsTab
 from colors import *
 from PIL import Image
+from validate_email_address import validate_email
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
@@ -152,6 +153,10 @@ class LandingPage(customtkinter.CTk):
 
         if self.check_for_blank_field(username, email, master_password, master_password_verify):
             return
+        if not validate_email(email):
+            self.new_email.configure(text_color=RED)
+            self.warning_label.configure(text='Not a valid email.')
+            return
         if master_password != master_password_verify:
             self.new_master_password.configure(text_color=RED)
             self.new_master_password_verify.configure(text_color=RED)
@@ -182,6 +187,7 @@ class LandingPage(customtkinter.CTk):
 
     def reset_new_account_text_color(self):
         self.new_username.configure(text_color=WHITE)
+        self.new_email.configure(text_color=WHITE)
         self.new_master_password.configure(text_color=WHITE)
         self.new_master_password_verify.configure(text_color=WHITE)
 
