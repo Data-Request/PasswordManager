@@ -13,8 +13,6 @@ from PIL import Image
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
- # todo change all execute commands to be with commands
-
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -27,9 +25,6 @@ class LandingPage(customtkinter.CTk):
         self.title('Password Manager')
         self.tabview_width = self.width - 50
         self.tabview_height = self.height - 30
-        # self.attributes('-fullscreen', True)
-        #self.tabview_width = self.winfo_screenwidth() - 50
-        #self.tabview_height = self.winfo_screenheight() - 50
 
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
@@ -54,6 +49,16 @@ class LandingPage(customtkinter.CTk):
         self.create_history_table()
 
     def create_log_in_widgets(self):
+        # Create Vault Image Frame
+        self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
+        self.vault_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault.png"), size=(150, 150))
+        self.vault_image_button = customtkinter.CTkButton(master=self.vault_image_frame,text='', image=self.vault_image,
+                                                          fg_color="transparent", state='disabled')
+        # Vault Image Frame Placement
+        self.vault_image_frame.place(relx=0.5, rely=0.06, anchor=tkinter.N)
+        self.vault_image_frame.grid_columnconfigure(1, weight=1)
+        self.vault_image_frame.grid_rowconfigure(1, weight=1)
+        self.vault_image_button.grid(row=0, column=0, pady=(0, 20), sticky="n")
         # Create Login Button Frame
         self.login_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
         self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="w")
@@ -68,9 +73,9 @@ class LandingPage(customtkinter.CTk):
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
                                                           text_color=BLACK, command=self.account_setup)
-        # Placement of all items
-        self.login_frame.place(relx=0.5, rely=0.3, anchor=tkinter.N)
-        self.login_frame.grid_columnconfigure(0, weight=1)
+        # Login Button Frame Placement
+        self.login_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
+        self.login_frame.grid_columnconfigure(1, weight=1)
         self.login_frame.grid_rowconfigure(6, weight=1)
         self.username_label.grid(row=0, column=0, sticky="ew")
         self.username.grid(row=1, column=0, pady=(0, 20), sticky="ew")
@@ -78,7 +83,7 @@ class LandingPage(customtkinter.CTk):
         self.password.grid(row=3, column=0, pady=(0, 20), sticky="ew")
         self.login_button.grid(row=4, column=0, pady=(0, 20), sticky="ew")
         self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
-        self.new_account_button.grid(row=6, column=0, pady=(120, 0), sticky="ew")
+        self.new_account_button.grid(row=6, column=0, pady=(60, 0), sticky="ew")
 
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
@@ -86,7 +91,8 @@ class LandingPage(customtkinter.CTk):
 
     def initialize_all_tabs(self):
         self.landing_page_tabview.configure(state='normal')
-        self.landing_page_tabview.set("History")
+        self.landing_page_tabview.set("Generator")
+        self.vault_image_frame.destroy()
         self.login_frame.destroy()
         self.warning_label.destroy()
         VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
@@ -105,7 +111,7 @@ class LandingPage(customtkinter.CTk):
         self.continue_button = customtkinter.CTkButton(master=self.new_account_frame, text="Continue",
                                                        command=self.create_new_account)
         # New Account Placement
-        self.new_account_frame.place(relx=0.5, rely=0.3, anchor=tkinter.N)
+        self.new_account_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
         self.new_account_frame.grid_columnconfigure(0, weight=1)
         self.new_account_frame.grid_rowconfigure(5, weight=1)
         self.new_username.grid(row=0, column=0, pady=(0, 20), sticky="ew")

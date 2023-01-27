@@ -37,7 +37,6 @@ class HistoryTab:
         self.history_textbox_frame.grid_columnconfigure(1, weight=1)
         self.history_textbox_frame.grid_rowconfigure(10, weight=1)
 
-
         # Clear History Button Frame
         self.delete_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\trash-solid.png"), size=(20, 20))
         self.clear_history_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('History'), fg_color="transparent")
@@ -50,8 +49,6 @@ class HistoryTab:
         self.clear_history_frame.grid_columnconfigure(1, weight=1)
         self.clear_history_frame.grid_rowconfigure(1, weight=1)
         self.clear_history_button.grid(row=0, column=0, sticky="e")
-
-
 
         # Initialize Widgets
         self.create_buttons()
@@ -81,6 +78,7 @@ class HistoryTab:
 
     def destroy_history_tab(self):
         for index in range(len(self.history_textbox)):
+            print(self.history_textbox[index])
             self.history_textbox[index].destroy()
             self.date_times[index].destroy()
             self.copy_buttons[index].destroy()
