@@ -31,14 +31,14 @@ class GeneratorTab:
         # Password Variables
         self.min_password_length = 8
         self.max_password_length = 128
-        self.password_length = 30
+        self.password_length = 32
         self.valid_symbols = "!@#$%^&*"
-        self.default_min_number = 3
-        self.default_min_symbol = 3
-        self.min_min_num = 1
-        self.max_min_num = int(self.password_length / 10)
-        self.min_symbols_num = 1
-        self.max_symbols_num = int(self.password_length / 10)
+        self.default_min_number = 1
+        self.default_min_symbol = 1
+        self.min_min_num = 0
+        self.max_min_num = self.password_length // 10
+        self.min_symbols_num = 0
+        self.max_symbols_num = self.password_length // 10
 
         # Passphrase
         self.min_words = 3
@@ -297,13 +297,13 @@ class GeneratorTab:
         self.create_password()
 
     def update_min_number_and_special(self):
-        self.max_min_num = int(self.password_length / 10)
-        self.max_symbols_num = int(self.password_length / 10)
+        self.max_min_num = self.password_length // 10
+        self.max_symbols_num = self.password_length // 10
         # Next parts stops from division of zero errors when updating the bar
-        if self.max_min_num < 3:
-            self.max_min_num = 3
-        if self.max_symbols_num < 3:
-            self.max_symbols_num = 3
+        if self.max_min_num < 1:
+            self.max_min_num = 1
+        if self.max_symbols_num < 1:
+            self.max_symbols_num = 1
         current_min_num = int(self.min_numbers_slider.get())
         current_symbol_num = int(self.min_symbol_slider.get())
         if current_min_num > self.max_min_num:
@@ -368,7 +368,6 @@ class GeneratorTab:
     def create_random_word(self):
         random_word = ''
         random_numbers = ''
-
         for i in range(0, secrets.randbelow(5)):
             random_numbers += str(secrets.randbelow(10))
 
@@ -436,11 +435,7 @@ class GeneratorTab:
                 self.num_or_symbol_used_in_middle += 1
 
     def update_advanced_scoring_variables(self, password):
-        next_char_to_check = 0
         for char in range(len(password)):
-            print(f'Checking Char number: {char}')
-            print(f'Char: {password[char]}')
-
             if char < len(password) - 1:
                 if password[char] in string.ascii_uppercase:
                     if password[char+1] in string.ascii_uppercase:
@@ -452,19 +447,12 @@ class GeneratorTab:
                     if password[char+1] in string.digits:
                         self.consecutive_numbers += 1
 
-
             # todo figure out sequential numbers/letters
 
             #Looks for repeated chars
             for char_b in range(len(password)):
                 if password[char] == password[char_b] and char != char_b:
                     self.repeat_char += 1
-
-
-
-
-
-
 
     def create_password(self):
         self.password_length = int(self.length_slider.get())
