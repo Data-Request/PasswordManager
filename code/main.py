@@ -14,6 +14,9 @@ customtkinter.set_appearance_mode("System")  # Modes: system (default), light, d
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
+# todo add email verification
+# todo add remember username feature, add settings to remove it
+
 class LandingPage(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -69,7 +72,7 @@ class LandingPage(customtkinter.CTk):
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
                                                     text='                             Log in', image=self.key_image,
                                                     compound='left', command=self.validate_log_info, anchor='w')
-        self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE,
+        self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE, width=300,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
                                                           text_color=BLACK, command=self.account_setup)
@@ -85,6 +88,26 @@ class LandingPage(customtkinter.CTk):
         self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
         self.new_account_button.grid(row=6, column=0, pady=(60, 0), sticky="ew")
 
+    def account_setup(self):
+        self.login_frame.destroy()
+        # Create New Account Frame
+        self.new_account_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
+        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username")
+        self.new_email = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email")
+        self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Master Password")
+        self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Renter Master Password")
+        self.continue_button = customtkinter.CTkButton(master=self.new_account_frame, text="Continue", width=300,
+                                                       command=self.create_new_account)
+        # New Account Placement
+        self.new_account_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
+        self.new_account_frame.grid_columnconfigure(0, weight=1)
+        self.new_account_frame.grid_rowconfigure(5, weight=1)
+        self.new_username.grid(row=0, column=0, pady=(0, 20), sticky="ew")
+        self.new_email.grid(row=1, column=0, pady=(0, 20), sticky="ew")
+        self.new_master_password.grid(row=2, column=0, pady=(0, 20), sticky="ew")
+        self.new_master_password_verify.grid(row=3, column=0, pady=(0, 20), sticky="ew")
+        self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
+
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
             self.history.create_buttons()
@@ -99,26 +122,6 @@ class LandingPage(customtkinter.CTk):
         GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         SettingsTab(self.landing_page_tabview, self.account_id)
-
-    def account_setup(self):
-        self.login_frame.destroy()
-        # Create New Account Frame
-        self.new_account_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
-        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username")
-        self.new_email = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email")
-        self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Master Password")
-        self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Renter Master Password")
-        self.continue_button = customtkinter.CTkButton(master=self.new_account_frame, text="Continue",
-                                                       command=self.create_new_account)
-        # New Account Placement
-        self.new_account_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
-        self.new_account_frame.grid_columnconfigure(0, weight=1)
-        self.new_account_frame.grid_rowconfigure(5, weight=1)
-        self.new_username.grid(row=0, column=0, pady=(0, 20), sticky="ew")
-        self.new_email.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password.grid(row=2, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password_verify.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
 
     def validate_log_info(self):
         username = self.username.get().lower()

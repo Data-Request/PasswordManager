@@ -8,7 +8,6 @@ from PIL import Image
 from datetime import datetime
 from settings import MAX_HISTORY_ENTRIES
 
-
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
 # todo look into generating passphrase on word separator input
