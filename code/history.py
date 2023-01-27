@@ -58,6 +58,7 @@ class HistoryTab:
             cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
             history_row = cursor.fetchall()
 
+        print(len(history_row))
         for index in range(len(history_row)):
             self.history_textbox[index] = customtkinter.CTkTextbox(master=self.history_textbox_frame,
                                                                    width=self.textbox_width, font=('Arial', 16),
@@ -78,10 +79,13 @@ class HistoryTab:
 
     def destroy_history_tab(self):
         for index in range(len(self.history_textbox)):
-            print(self.history_textbox[index])
-            self.history_textbox[index].destroy()
-            self.date_times[index].destroy()
-            self.copy_buttons[index].destroy()
+            if self.history_textbox[index] != None:
+                self.history_textbox[index].destroy()
+                self.history_textbox[index] = None
+                self.date_times[index].destroy()
+                self.date_times[index] = None
+                self.copy_buttons[index].destroy()
+                self.copy_buttons[index] = None
 
     def clear_history_entries(self):
         with sqlite3.connect('data.db') as db:

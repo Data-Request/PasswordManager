@@ -1,1 +1,0 @@
-Password manager project, I don't recommend actually using this to store your passwords.

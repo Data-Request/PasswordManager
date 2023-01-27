@@ -3,20 +3,20 @@ import hashlib
 import tkinter
 import customtkinter
 import sqlite3
+from PIL import Image
+from validate_email_address import validate_email
 from vault import VaultTab
 from generator import GeneratorTab
 from history import HistoryTab
 from settings import SettingsTab
 from colors import *
-from PIL import Image
-from validate_email_address import validate_email
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
-
-# todo add email verification
+# todo add email verification via email for master password resets
 # todo add remember username feature, add settings to remove it
+
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -29,6 +29,10 @@ class LandingPage(customtkinter.CTk):
         self.title('Password Manager')
         self.tabview_width = self.width - 50
         self.tabview_height = self.height - 30
+
+        #Images
+        self.vault_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault.png"), size=(150, 150))
+        self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
 
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
@@ -55,7 +59,6 @@ class LandingPage(customtkinter.CTk):
     def create_log_in_widgets(self):
         # Create Vault Image Frame
         self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
-        self.vault_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault.png"), size=(150, 150))
         self.vault_image_button = customtkinter.CTkButton(master=self.vault_image_frame,text='', image=self.vault_image,
                                                           fg_color="transparent", state='disabled')
         # Vault Image Frame Placement
@@ -69,7 +72,6 @@ class LandingPage(customtkinter.CTk):
         self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
         self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
         self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
-        self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
                                                     text='                             Log in', image=self.key_image,
                                                     compound='left', command=self.validate_log_info, anchor='w')
@@ -111,6 +113,7 @@ class LandingPage(customtkinter.CTk):
 
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
+            self.history.destroy_history_tab()
             self.history.create_buttons()
 
     def initialize_all_tabs(self):
