@@ -83,7 +83,7 @@ class VaultTab:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        for i in range(50):
+        for i in range(15):
             customtkinter.CTkButton(master=scrollable_frame, text="                                     Tech", image=self.folder_image, compound='left',
                                     bg_color='transparent',  text_color=BLACK, anchor='w', width=350, corner_radius=15).pack(pady=(20, 0))
 

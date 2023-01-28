@@ -1,7 +1,7 @@
 import tkinter
 import customtkinter
 
-MAX_HISTORY_ENTRIES = 5
+MAX_HISTORY_ENTRIES = 10
 
 
 class SettingsTab:
