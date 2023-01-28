@@ -37,6 +37,10 @@ class HistoryTab:
         self.history_textbox_frame.grid_columnconfigure(1, weight=1)
         self.history_textbox_frame.grid_rowconfigure(10, weight=1)
 
+        # Create Max Entries Label
+        self.max_entries_label = customtkinter.CTkLabel(master=self.landing_tabview.tab('History'), text=f'Max History: {MAX_HISTORY_ENTRIES}')
+        self.max_entries_label.place(relx=0.15, rely=1, anchor=tkinter.S)
+
         # Clear History Button Frame
         self.delete_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\trash-solid.png"), size=(20, 20))
         self.clear_history_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('History'), fg_color="transparent")
@@ -50,15 +54,11 @@ class HistoryTab:
         self.clear_history_frame.grid_rowconfigure(1, weight=1)
         self.clear_history_button.grid(row=0, column=0, sticky="e")
 
-        # Initialize Widgets
-        self.create_buttons()
-
     def create_buttons(self):
         with sqlite3.connect('data.db') as db:
             cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
             history_row = cursor.fetchall()
 
-        print(len(history_row))
         for index in range(len(history_row)):
             self.history_textbox[index] = customtkinter.CTkTextbox(master=self.history_textbox_frame,
                                                                    width=self.textbox_width, font=('Arial', 16),

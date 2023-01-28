@@ -16,7 +16,8 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 
 # todo add email verification via email for master password resets
 # todo add remember username feature, add settings to remove it
-
+# todo sign out button
+# todo add back button to account creation
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -118,7 +119,7 @@ class LandingPage(customtkinter.CTk):
 
     def initialize_all_tabs(self):
         self.landing_page_tabview.configure(state='normal')
-        self.landing_page_tabview.set("Generator")
+        self.landing_page_tabview.set("Vault")
         self.vault_image_frame.destroy()
         self.login_frame.destroy()
         self.warning_label.destroy()

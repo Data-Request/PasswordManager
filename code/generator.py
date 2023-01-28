@@ -110,9 +110,6 @@ class GeneratorTab:
         self.password_tabview.place(relx=0.5, rely=0.2, anchor=tkinter.N)
         self.password_tabview.add('Password')
         self.password_tabview.add('Passphrase')
-        # Separator
-        # capitalize
-        # include number
         self.password_tabview.add("Username")
 
         """=======================       Password Section       ======================="""
