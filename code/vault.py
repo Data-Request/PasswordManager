@@ -5,6 +5,8 @@ import customtkinter
 import sqlite3
 from colors import *
 from PIL import Image
+from add import AddItem
+
 
 class VaultTab:
     def __init__(self, landing_tabview, width, height, account_id):
@@ -27,6 +29,7 @@ class VaultTab:
 
         #Images
         self.folder_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\folder-open-solid.png"), size=(20, 20))
+        self.menu_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\menu.png"), size=(20, 20))
 
         # Create and Place Bottom Label Frame
         self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'),
@@ -44,10 +47,15 @@ class VaultTab:
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
         # Copy / Generate Password Buttons
+        self.add_image = customtkinter.CTkImage(
+            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\add.png"), size=(20, 20))
         self.copy_image = customtkinter.CTkImage( Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
         self.launch_image = customtkinter.CTkImage( Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\click.png"), size=(20, 20))
         self.copy_gen_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'),
                                                             fg_color="transparent")
+        self.add_button = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.add_image,
+                                                  fg_color=BLUE, command=self.create_add_frame,
+                                                  width=self.button_width, height=self.button_height)
         self.copy_buttons = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.copy_image,
                                                     fg_color=BLUE,  width=self.button_width,  height=self.button_height)
         self.launch_button = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='',
@@ -55,11 +63,12 @@ class VaultTab:
                                                      command=self.launch_event, width=self.button_width,
                                                      height=self.button_height)
         # Copy / Generate Placement
-        self.copy_gen_button_frame.place(relx=0.96, rely=0.04, anchor=tkinter.N)
+        self.copy_gen_button_frame.place(relx=0.96, rely=0.01, anchor=tkinter.N)
         self.copy_gen_button_frame.grid_columnconfigure(1, weight=1)
-        self.copy_gen_button_frame.grid_rowconfigure(2, weight=1)
-        self.copy_buttons.grid(row=0, column=0, pady=(0, 10), sticky="n")
-        self.launch_button.grid(row=1, column=0, sticky="n")
+        self.copy_gen_button_frame.grid_rowconfigure(3, weight=1)
+        self.add_button.grid(row=0, column=0, pady=(0, 10), sticky="n")
+        self.copy_buttons.grid(row=1, column=0, pady=(0, 10), sticky="n")
+        self.launch_button.grid(row=2, column=0, sticky="n")
 
         """=======================       Tabview Section       ======================="""
 
@@ -91,10 +100,61 @@ class VaultTab:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        """=======================       Unsorted Section       ======================="""
+
+        unsorted_container = tkinter.Frame(self.password_tabview.tab('Unsorted'), bg=MID_DARK_GRAY2)
+        unsorted_canvas = tkinter.Canvas(unsorted_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380, width=355)
+        unsorted_scrollbar = customtkinter.CTkScrollbar(unsorted_container, command=unsorted_canvas.yview)
+        unsorted_scrollable_frame = tkinter.Frame(unsorted_canvas, bg=MID_DARK_GRAY2)
+        unsorted_scrollable_frame.bind("<Configure>", lambda e: unsorted_canvas.configure(scrollregion=unsorted_canvas.bbox("all")))
+        unsorted_canvas.create_window((0, 0), window=unsorted_scrollable_frame, anchor="nw")
+        unsorted_canvas.configure(yscrollcommand=unsorted_scrollbar.set)
+
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM Unsorted WHERE account_id = ?', [self.account_id])
+            unsorted_row = cursor.fetchall()
+
+        for index in range(len(unsorted_row)):
+            customtkinter.CTkButton(master=unsorted_scrollable_frame, text=unsorted_row[index][1], image=self.menu_image, compound='left',
+                                    bg_color='transparent',  text_color=BLACK, anchor='w', width=350, corner_radius=15).pack(pady=(20, 0))
+
+        unsorted_container.pack()
+        unsorted_canvas.pack(side="left", fill="both", expand=True)
+        unsorted_scrollbar.pack(side="right", fill="y")
+
+
+        """=======================       Secure Notes Section       ======================="""
+
+        note_container = tkinter.Frame(self.password_tabview.tab('Secure Notes'), bg=MID_DARK_GRAY2)
+        note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380, width=355)
+        note_scrollbar = customtkinter.CTkScrollbar(note_container, command=note_canvas.yview)
+        note_scrollable_frame = tkinter.Frame(note_canvas, bg=MID_DARK_GRAY2)
+        note_scrollable_frame.bind("<Configure>", lambda e: note_canvas.configure(scrollregion=note_canvas.bbox("all")))
+        note_canvas.create_window((0, 0), window=note_scrollable_frame, anchor="nw")
+        note_canvas.configure(yscrollcommand=note_scrollbar.set)
+
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM Secure_Notes WHERE account_id = ?', [self.account_id])
+            note_row = cursor.fetchall()
+
+        for index in range(len(note_row)):
+            customtkinter.CTkButton(master=note_scrollable_frame, text=note_row[index][1], image=self.menu_image, compound='left',
+                                    bg_color='transparent',  text_color=BLACK, anchor='w', width=350, corner_radius=15).pack(pady=(20, 0))
+
+        note_container.pack()
+        note_canvas.pack(side="left", fill="both", expand=True)
+        note_scrollbar.pack(side="right", fill="y")
+
     def launch_event(self):
         browser = webbrowser.get()
         browser.open_new_tab('https://www.creditkarma.com/auth/logon')
         print(browser.name)
+
+    def create_add_frame(self):
+        self.add_item = AddItem(self, self.landing_tabview, self.account_id)
+
+    def destroy_add_frame(self):
+        del self.add_item
 
 
 
