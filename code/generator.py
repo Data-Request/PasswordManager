@@ -8,7 +8,7 @@ from PIL import Image
 from datetime import datetime
 from settings import MAX_HISTORY_ENTRIES
 from add import AddItem
-
+from add_copy_create import AddCopyCreate
 
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
@@ -22,6 +22,7 @@ class GeneratorTab:
         # General Setup
         self.account_id = account_id
         self.landing_tabview = landing_tabview
+        self.name = 'Generator'
         self.password_tabview_width = width - 72
         self.password_tabview_height = height - 300
         self.button_width = 25
@@ -66,32 +67,8 @@ class GeneratorTab:
                                                      height=self.main_textbox_height, corner_radius=15)
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
-        # Add / Copy / Create Password Buttons
-        self.add_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\add.png"), size=(20, 20))
-        self.copy_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
-        self.create_image = customtkinter.CTkImage(
-            Image.open(r'C:\Users\xjord\Desktop\PasswordManager\images\arrows-spin-solid.png'), size=(20, 20))
-
-        self.copy_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
-                                                        fg_color="transparent")
-        self.add_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=self.add_image,
-                                                  fg_color=BLUE, command=self.create_add_frame,
-                                                  width=self.button_width, height=self.button_height)
-        self.copy_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=self.copy_image,
-                                                   fg_color=BLUE, command=self.copy_main_textbox,
-                                                   width=self.button_width, height=self.button_height)
-        self.create_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=self.create_image,
-                                                     fg_color=BLUE, command=self.update_main_textbox,
-                                                     width=self.button_width, height=self.button_height)
-        # Add / Copy / Create Placement
-        self.copy_button_frame.place(relx=0.96, rely=0.01, anchor=tkinter.N)
-        self.copy_button_frame.grid_columnconfigure(0, weight=1)
-        self.copy_button_frame.grid_rowconfigure(3, weight=1)
-        self.add_button.grid(row=0, column=0, pady=(0, 10), sticky="n")
-        self.copy_button.grid(row=1, column=0, pady=(0, 10), sticky="n")
-        self.create_button.grid(row=2, column=0, sticky="n")
+        # Create Add / Copy / Create
+        self.add_copy_create = AddCopyCreate(self.landing_tabview, self, self.account_id)
 
         # Password Strength
         self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
@@ -109,7 +86,7 @@ class GeneratorTab:
         self.password_tabview = customtkinter.CTkTabview(master=self.landing_tabview.tab('Generator'),
                                                          width=self.password_tabview_width,
                                                          height=self.password_tabview_height,
-                                                         segmented_button_selected_color=BLUE, corner_radius=15,
+                                                         segmented_button_selected_color=GREEN, corner_radius=15,
                                                          border_width=3, border_color=WHITE,
                                                          command=self.update_main_textbox)
         self.password_tabview.place(relx=0.5, rely=0.2, anchor=tkinter.N)
@@ -335,12 +312,6 @@ class GeneratorTab:
                                          number_of_steps=self.max_symbols_num - self.min_symbols_num)
         self.min_symbol_label.configure(text=f'Minimum Symbols: {int(self.min_symbol_slider.get())}')
         self.min_symbol_slider.set(current_symbol_num)
-
-    def create_add_frame(self):
-        self.add_item = AddItem(self, self.landing_tabview, self.account_id)
-
-    def destroy_add_frame(self):
-        del self.add_item
 
     def copy_main_textbox(self):
         self.main_textbox.clipboard_clear()

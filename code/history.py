@@ -49,7 +49,7 @@ class HistoryTab:
         # Clear History Button
         self.clear_history_button = customtkinter.CTkButton(master=self.landing_tabview.tab('History'),
                                                             text='Clear History', command=self.clear_history_entries,
-                                                            fg_color=BLUE, text_color=BLACK, image=self.delete_image,
+                                                            fg_color=GREEN, text_color=BLACK, image=self.delete_image,
                                                             width=self.clear_history_width,
                                                             height=self.clear_history_height)
         self.clear_history_button.place(relx=0.7, rely=1, anchor=tkinter.S)

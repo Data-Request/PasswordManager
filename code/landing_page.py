@@ -1,5 +1,4 @@
 import os
-import hashlib
 import tkinter
 import customtkinter
 import sqlite3
@@ -9,6 +8,7 @@ from vault import VaultTab
 from generator import GeneratorTab
 from history import HistoryTab
 from settings import SettingsTab
+from support import generate_key
 from colors import *
 
 
@@ -26,13 +26,13 @@ class LandingPage(customtkinter.CTk):
 
         # Images
         self.vault_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault.png"), size=(150, 150))
+            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault-green.png"), size=(180, 180))
         self.key_image = customtkinter.CTkImage(
             Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
 
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
-                                                             corner_radius=15, segmented_button_selected_color=BLUE,
+                                                             corner_radius=15, segmented_button_selected_color=GREEN,
                                                              border_width=3, border_color=WHITE, state='disabled',
                                                              text_color=WHITE, command=self.tabview_clicked_event)
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
@@ -44,7 +44,7 @@ class LandingPage(customtkinter.CTk):
 
         self.warning_label = customtkinter.CTkLabel(master=self.landing_page_tabview.tab('Vault'),
                                                     text='', text_color=RED)
-        self.warning_label.place(relx=0.5, rely=1, anchor=tkinter.S)
+        self.warning_label.place(relx=0.5, rely=0.01, anchor=tkinter.N)
 
         # Initialize
         self.account_id = None
@@ -76,7 +76,7 @@ class LandingPage(customtkinter.CTk):
         self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
                                                           text_color=BLACK, command=self.account_setup)
         # Login Button Frame Placement
-        self.login_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
+        self.login_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
         self.login_frame.grid_columnconfigure(1, weight=1)
         self.login_frame.grid_rowconfigure(6, weight=1)
         self.username_label.grid(row=0, column=0, sticky="ew")
@@ -85,31 +85,50 @@ class LandingPage(customtkinter.CTk):
         self.password.grid(row=3, column=0, pady=(0, 20), sticky="ew")
         self.login_button.grid(row=4, column=0, pady=(0, 20), sticky="ew")
         self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
-        self.new_account_button.grid(row=6, column=0, pady=(60, 0), sticky="ew")
+        self.new_account_button.grid(row=6, column=0, pady=(100, 0), sticky="ew")
 
     def account_setup(self):
         self.login_frame.destroy()
         # Create New Account Frame
         self.new_account_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
-        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username")
+        self.new_username_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Username:", anchor="w")
+        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username", width=300)
+        self.new_email_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Email:", anchor="w")
         self.new_email = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email")
+        self.new_master_password_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Master Password:", anchor="w")
         self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame,
                                                           placeholder_text="Master Password")
+        self.new_master_password_verify_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Retype Master Password:", anchor="w")
         self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame,
                                                                  placeholder_text="Renter Master Password")
-        self.continue_button = customtkinter.CTkButton(master=self.new_account_frame, text="Continue", width=300,
-                                                       command=self.create_new_account)
+        self.back_forward_button = customtkinter.CTkSegmentedButton(master=self.new_account_frame, width=300,
+                                                                    text_color=BLACK, values=["Back", "Create"],
+                                                                    unselected_color=GREEN, unselected_hover_color=DARK_GREEN,
+                                                                    command=self.back_forward_button)
         # New Account Placement
-        self.new_account_frame.place(relx=0.5, rely=0.4, anchor=tkinter.N)
-        self.new_account_frame.grid_columnconfigure(0, weight=1)
-        self.new_account_frame.grid_rowconfigure(5, weight=1)
-        self.new_username.grid(row=0, column=0, pady=(0, 20), sticky="ew")
-        self.new_email.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password.grid(row=2, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password_verify.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.continue_button.grid(row=4, column=0, pady=(40, 20), sticky="ew")
+        self.new_account_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
+        self.new_account_frame.grid_columnconfigure(1, weight=1)
+        self.new_account_frame.grid_rowconfigure(9, weight=1)
+        self.new_username_label.grid(row=0, column=0, sticky="ew")
+        self.new_username.grid(row=1, column=0, pady=(0, 20), sticky="ew")
+        self.new_email_label.grid(row=2, column=0, sticky="ew")
+        self.new_email.grid(row=3, column=0, pady=(0, 20), sticky="ew")
+        self.new_master_password_label.grid(row=4, column=0, sticky="ew")
+        self.new_master_password.grid(row=5, column=0, pady=(0, 20), sticky="ew")
+        self.new_master_password_verify_label.grid(row=6, column=0, sticky="ew")
+        self.new_master_password_verify.grid(row=7, column=0, pady=(0, 20), sticky="ew")
+        self.back_forward_button.grid(row=8, column=0, pady=(42, 20), sticky="ew")
 
+    def back_forward_button(self, *args):
+        print(type(args))
+        if args[0] == 'Create':
+            print('Create Account Check')
+            self.create_new_account()
+        else:
+            self.new_account_frame.destroy()
+            self.warning_label.configure(text='')
+            self.create_log_in_widgets()
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
             self.history.destroy_history_tab()
@@ -137,7 +156,7 @@ class LandingPage(customtkinter.CTk):
         if user_account is None:
             self.warning_label.configure(text='Incorrect username or password.')
         else:
-            current_key = self.generate_key(user_account[2], password)
+            current_key = generate_key(user_account[2], password)
             if current_key == user_account[3]:
                 self.account_id = user_account[0]
                 self.initialize_all_tabs()
@@ -174,7 +193,7 @@ class LandingPage(customtkinter.CTk):
         if username_row is None:
             if email_row is None:
                 salt = os.urandom(32)
-                key = self.generate_key(salt, master_password)
+                key = generate_key(salt, master_password)
                 with sqlite3.connect('data.db') as db:
                     db.execute('INSERT INTO Person (username, email, salt, key) VALUES (?,?,?,?)',
                                (username, email, salt, key))
@@ -210,12 +229,3 @@ class LandingPage(customtkinter.CTk):
         else:
             return False
 
-    @staticmethod
-    def generate_key(salt, password):
-        key = hashlib.pbkdf2_hmac(
-            'sha256',  # The hash digest algorithm for HMAC
-            password.encode('utf-8'),  # Convert the password to bytes
-            salt,  # Provide the salt
-            100000  # It is recommended to use at least 100,000 iterations of SHA-256
-        )
-        return key

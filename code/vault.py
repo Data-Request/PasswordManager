@@ -1,11 +1,11 @@
 import os
 import tkinter
-import webbrowser
 import customtkinter
 import sqlite3
 from colors import *
 from PIL import Image
 from add import AddItem
+from add_copy_create import AddCopyCreate
 
 
 class VaultTab:
@@ -15,6 +15,7 @@ class VaultTab:
         # General Setup
         self.account_id = account_id
         self.landing_tabview = landing_tabview
+        self.name = 'Vault'
         self.vault_tabview_width = width - 72
         self.vault_tabview_height = height - 270
         self.button_width = 25
@@ -46,36 +47,17 @@ class VaultTab:
                                                      height=self.main_textbox_height, corner_radius=15)
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
-        # Copy / Generate Password Buttons
-        self.add_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\add.png"), size=(20, 20))
-        self.copy_image = customtkinter.CTkImage( Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
-        self.launch_image = customtkinter.CTkImage( Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\click.png"), size=(20, 20))
-        self.copy_gen_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'),
-                                                            fg_color="transparent")
-        self.add_button = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.add_image,
-                                                  fg_color=BLUE, command=self.create_add_frame,
-                                                  width=self.button_width, height=self.button_height)
-        self.copy_buttons = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='', image=self.copy_image,
-                                                    fg_color=BLUE,  width=self.button_width,  height=self.button_height)
-        self.launch_button = customtkinter.CTkButton(master=self.copy_gen_button_frame, text='',
-                                                     image=self.launch_image, fg_color=BLUE,
-                                                     command=self.launch_event, width=self.button_width,
-                                                     height=self.button_height)
-        # Copy / Generate Placement
-        self.copy_gen_button_frame.place(relx=0.96, rely=0.01, anchor=tkinter.N)
-        self.copy_gen_button_frame.grid_columnconfigure(1, weight=1)
-        self.copy_gen_button_frame.grid_rowconfigure(3, weight=1)
-        self.add_button.grid(row=0, column=0, pady=(0, 10), sticky="n")
-        self.copy_buttons.grid(row=1, column=0, pady=(0, 10), sticky="n")
-        self.launch_button.grid(row=2, column=0, sticky="n")
+
+        # Create Add / Copy / Create
+        self.add_copy_create = AddCopyCreate(self.landing_tabview, self, self.account_id)
+
 
         """=======================       Tabview Section       ======================="""
 
         self.password_tabview = customtkinter.CTkTabview(master=self.landing_tabview.tab('Vault'),
                                                          width=self.vault_tabview_width,
                                                          height=self.vault_tabview_height,
-                                                         segmented_button_selected_color=BLUE, corner_radius=15,
+                                                         segmented_button_selected_color=GREEN, corner_radius=15,
                                                          border_width=3, border_color=WHITE)
         self.password_tabview.place(relx=0.5, rely=0.2, anchor=tkinter.N)
         self.password_tabview.add('Folders')
@@ -144,17 +126,6 @@ class VaultTab:
         note_container.pack()
         note_canvas.pack(side="left", fill="both", expand=True)
         note_scrollbar.pack(side="right", fill="y")
-
-    def launch_event(self):
-        browser = webbrowser.get()
-        browser.open_new_tab('https://www.creditkarma.com/auth/logon')
-        print(browser.name)
-
-    def create_add_frame(self):
-        self.add_item = AddItem(self, self.landing_tabview, self.account_id)
-
-    def destroy_add_frame(self):
-        del self.add_item
 
 
 
