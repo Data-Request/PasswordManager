@@ -7,8 +7,8 @@ from colors import *
 from PIL import Image
 from datetime import datetime
 from settings import MAX_HISTORY_ENTRIES
-from add import AddItem
-from add_copy_create import AddCopyCreate
+from add_item import AddItem
+from right_button_sidebar import RightButtonSidebar
 
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
@@ -68,7 +68,7 @@ class GeneratorTab:
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
         # Create Add / Copy / Create
-        self.add_copy_create = AddCopyCreate(self.landing_tabview, self, self.account_id)
+        self.add_copy_create = RightButtonSidebar(self.landing_tabview, self, self.account_id)
 
         # Password Strength
         self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
@@ -472,7 +472,7 @@ class GeneratorTab:
         date = now.strftime("%c")
         key = self.main_textbox.get('0.0', 'end').strip()
 
-        if self.password_tabview.get() != 'Password' and self.password_tabview.get() != 'Passphrase':
+        if self.password_tabview.get() == 'Username':
             return
         if self.check_if_already_entered(key):
             return

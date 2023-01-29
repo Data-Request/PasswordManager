@@ -1,11 +1,9 @@
-import os
 import tkinter
 import customtkinter
 import sqlite3
 from colors import *
 from PIL import Image
-from add import AddItem
-from add_copy_create import AddCopyCreate
+from right_button_sidebar import RightButtonSidebar
 
 
 class VaultTab:
@@ -49,7 +47,7 @@ class VaultTab:
 
 
         # Create Add / Copy / Create
-        self.add_copy_create = AddCopyCreate(self.landing_tabview, self, self.account_id)
+        self.add_copy_create = RightButtonSidebar(self.landing_tabview, self, self.account_id)
 
 
         """=======================       Tabview Section       ======================="""

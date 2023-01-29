@@ -2,7 +2,7 @@ import customtkinter
 import sqlite3
 from landing_page import LandingPage
 
-# todo add cancel button to create account page
+
 # todo add email verification via email for master password resets
 # todo add remember username feature, add settings to remove it
 # todo sign out button

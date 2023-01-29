@@ -3,9 +3,10 @@ import customtkinter
 import webbrowser
 from colors import *
 from PIL import Image
-from add import AddItem
+from add_item import AddItem
 
-class AddCopyCreate:
+
+class RightButtonSidebar:
     def __init__(self, landing_tabview, parent, account_id):
         super().__init__()
 

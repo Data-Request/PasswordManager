@@ -81,7 +81,7 @@ class HistoryTab:
             self.date_times[index] = customtkinter.CTkLabel(master=self.scrollable_frame, fg_color=DARK_GRAY,
                                                             corner_radius=15)
             self.copy_buttons[index] = customtkinter.CTkButton(master=self.scrollable_frame, text='',
-                                                               image=self.copy_image, fg_color=BLUE,
+                                                               image=self.copy_image, fg_color=GREEN,
                                                                command=functools.partial(self.copy_text, index),
                                                                width=self.copy_button_width,
                                                                height=self.copy_button_height)

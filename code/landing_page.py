@@ -11,6 +11,7 @@ from settings import SettingsTab
 from support import generate_key
 from colors import *
 
+# todo find fix error when hitting back twice in a role
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -48,9 +49,10 @@ class LandingPage(customtkinter.CTk):
 
         # Initialize
         self.account_id = None
+        self.create_vault_image()
         self.create_log_in_widgets()
 
-    def create_log_in_widgets(self):
+    def create_vault_image(self):
         # Create Vault Image Frame
         self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
@@ -62,6 +64,8 @@ class LandingPage(customtkinter.CTk):
         self.vault_image_frame.grid_columnconfigure(1, weight=1)
         self.vault_image_frame.grid_rowconfigure(1, weight=1)
         self.vault_image_button.grid(row=0, column=0, pady=(0, 20), sticky="n")
+
+    def create_log_in_widgets(self):
         # Create Login Button Frame
         self.login_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
         self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="w")
@@ -121,11 +125,11 @@ class LandingPage(customtkinter.CTk):
         self.back_forward_button.grid(row=8, column=0, pady=(42, 20), sticky="ew")
 
     def back_forward_button(self, *args):
-        print(type(args))
         if args[0] == 'Create':
             print('Create Account Check')
             self.create_new_account()
         else:
+            print('Going back')
             self.new_account_frame.destroy()
             self.warning_label.configure(text='')
             self.create_log_in_widgets()
@@ -137,9 +141,6 @@ class LandingPage(customtkinter.CTk):
     def initialize_all_tabs(self):
         self.landing_page_tabview.configure(state='normal')
         self.landing_page_tabview.set("Vault")
-        self.vault_image_frame.destroy()
-        self.login_frame.destroy()
-        self.warning_label.destroy()
         VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
@@ -160,6 +161,9 @@ class LandingPage(customtkinter.CTk):
             if current_key == user_account[3]:
                 self.account_id = user_account[0]
                 self.initialize_all_tabs()
+                self.vault_image_frame.destroy()
+                self.login_frame.destroy()
+                self.warning_label.destroy()
             else:
                 self.warning_label.configure(text='Incorrect username or password.')
 
