@@ -4,10 +4,8 @@ import sqlite3
 import secrets
 import string
 from colors import *
-from PIL import Image
 from datetime import datetime
 from settings import MAX_HISTORY_ENTRIES
-from add_item import AddItem
 from right_button_sidebar import RightButtonSidebar
 
 # todo password strength fix
@@ -68,7 +66,7 @@ class GeneratorTab:
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
         # Create Add / Copy / Create
-        self.add_copy_create = RightButtonSidebar(self.landing_tabview, self, self.account_id)
+        self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.name, self.account_id)
 
         # Password Strength
         self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),

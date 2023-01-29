@@ -73,8 +73,9 @@ class HistoryTab:
         with sqlite3.connect('data.db') as db:
             cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
             history_row = cursor.fetchall()
+            history_row.reverse()
 
-        for index in range(len(history_row)):
+        for index in (range(len(history_row))):
             self.history_textbox[index] = customtkinter.CTkTextbox(master=self.scrollable_frame,
                                                                    width=self.textbox_width, font=('Arial', 16),
                                                                    height=self.textbox_height, corner_radius=15)

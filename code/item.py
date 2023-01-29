@@ -5,14 +5,16 @@ from PIL import Image
 from colors import *
 
 
-class AddItem:
-    def __init__(self, landing_tabview, parent, account_id):
+class Item:
+    def __init__(self, landing_tabview, parent, name, account_id, item_id):
         super().__init__()
 
         # General Setup
         self.account_id = account_id
+        self.item_id = item_id
         self.landing_tabview = landing_tabview
         self.parent = parent
+        self.name = name
         self.button_width = 25
         self.button_height = 25
         self.textbox_width = 300
@@ -26,14 +28,14 @@ class AddItem:
 
         # Initialize
         self.create_main_frame()
-        if self.parent.name == 'Generator':
-            self.create_generator_option_frame()
+        if self.name == 'Generator' or self.name == 'Unsorted':
+            self.create_basic_option_frame()
         else:
             self.create_vault_option_frame()
 
     def create_main_frame(self):
         # Create Main Frame
-        if self.parent.name == 'Generator':
+        if self.name == 'Generator':
             self.main_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
                                                      fg_color="transparent", height=600, width=400,
                                                      border_width=3, border_color=WHITE, corner_radius=15)
@@ -46,11 +48,11 @@ class AddItem:
         self.main_frame.grid_columnconfigure(1, weight=1)
         self.main_frame.grid_rowconfigure(10, weight=1)
 
-    def create_generator_option_frame(self):
+    def create_basic_option_frame(self):
         self.options_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color="transparent")
         self.folder_label = customtkinter.CTkLabel(master=self.options_frame, text="Folder")
         self.folder_menu = customtkinter.CTkOptionMenu(master=self.options_frame, width=300,
-                                                       values=["Unsorted", "Accounting", 'Tech'])
+                                                       values=["Unsorted", "Accounting", 'Tech', 'Party', 'Drama'])
         self.item_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name")
         self.item_name_textbox = customtkinter.CTkTextbox(master=self.options_frame,
                                                           width=self.textbox_width, font=('Arial', 16),
@@ -90,8 +92,20 @@ class AddItem:
         self.cancel_save_button.grid(row=11, column=0, sticky="n")
 
         # Set Defaults
-        self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end'))
-        self.password_textbox.configure(state='disabled')
+        if self.name == 'Generator':
+            self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end'))
+            self.password_textbox.configure(state='disabled')
+        else:
+            with sqlite3.connect('data.db') as db:
+                cursor = db.execute('SELECT * FROM Item WHERE item_id = ?', [self.item_id])
+                item = cursor.fetchall()
+            self.item_name_textbox.insert('end', item[0][2])
+            self.username_textbox.insert('end', item[0][3])
+            self.password_textbox.insert('end', item[0][4])
+            self.website_textbox.insert('end', item[0][5])
+
+
+
 
     def create_vault_option_frame(self):
         print('Create Vault options now')
@@ -99,8 +113,33 @@ class AddItem:
     def cancel_or_save_event(self, *args):
         if args[0] == 'Cancel':
             self.destroy_main_frame()
-        else:
+        elif self.name == 'Generator':
             self.save_item()
+        elif self.name == 'Unsorted':
+            self.edit_item()
+
+    def edit_item(self):
+        self.warning_label.configure(text='')
+        item_name = self.item_name_textbox.get('0.0', 'end').strip()
+        username = self.username_textbox.get('0.0', 'end').strip()
+        key = self.password_textbox.get('0.0', 'end').strip()
+        url = self.website_textbox.get('0.0', 'end').strip()
+        folder = self.folder_menu.get()
+
+        with sqlite3.connect('data.db') as db:
+            db.execute('UPDATE Item '
+                       'SET item_name = ?, username = ?, key = ?, url = ?, folder = ?'
+                       'WHERE item_id = ?', (item_name, username, key, url, folder, self.item_id))
+        if self.folder_menu.get() == 'Unsorted':
+            # Updates the unsorted frame
+            self.parent.unsorted_frame.destroy()
+            self.parent.create_unsorted_frame()
+        else:
+            print('Update to folder')
+
+        self.destroy_main_frame()
+
+
 
     def save_item(self):
         self.warning_label.configure(text='')
@@ -108,6 +147,7 @@ class AddItem:
         username = self.username_textbox.get('0.0', 'end').strip()
         key = self.password_textbox.get('0.0', 'end').strip()
         url = self.website_textbox.get('0.0', 'end').strip()
+        folder = self.folder_menu.get()
 
         if item_name == '':
             self.warning_label.configure(text='Website Name is blank.')
@@ -121,8 +161,8 @@ class AddItem:
 
         if self.folder_menu.get() == 'Unsorted':
             with sqlite3.connect('data.db') as db:
-                db.execute('INSERT INTO Unsorted (account_id, item_name, username, key, url) VALUES (?,?,?,?,?)',
-                           (self.account_id, item_name, username, key, url))
+                db.execute('INSERT INTO Item (account_id, item_name, username, key, url, folder) VALUES (?,?,?,?,?,?)',
+                           (self.account_id, item_name, username, key, url, folder))
         else:
             print('Goes to folder')
 

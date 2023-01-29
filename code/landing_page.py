@@ -34,7 +34,7 @@ class LandingPage(customtkinter.CTk):
         # Create Tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=GREEN,
-                                                             border_width=3, border_color=WHITE, state='disabled',
+                                                             border_width=3, border_color=GREEN, state='disabled',
                                                              text_color=WHITE, command=self.tabview_clicked_event)
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
         self.landing_page_tabview.add('Vault')
@@ -133,6 +133,7 @@ class LandingPage(customtkinter.CTk):
             self.new_account_frame.destroy()
             self.warning_label.configure(text='')
             self.create_log_in_widgets()
+
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
             self.history.destroy_history_tab()

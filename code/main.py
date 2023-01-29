@@ -21,8 +21,8 @@ def create_database_tables():
         (account_id INTEGER, key TEXT, timestamp TEXT,
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
-        db.execute(""" CREATE TABLE IF NOT EXISTS Unsorted 
-        (account_id INTEGER, item_name TEXT, username TEXT, key TEXT, url TEXT,
+        db.execute(""" CREATE TABLE IF NOT EXISTS Item 
+        (item_id INTEGER PRIMARY KEY, account_id INTEGER, item_name TEXT, username TEXT, key TEXT, url TEXT, folder TEXT,
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS Secure_Notes 
