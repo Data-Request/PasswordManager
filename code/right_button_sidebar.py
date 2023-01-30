@@ -3,7 +3,7 @@ import customtkinter
 import webbrowser
 from colors import *
 from PIL import Image
-from item import Item
+from item_menu import ItemMenu
 
 
 class RightButtonSidebar:
@@ -32,8 +32,8 @@ class RightButtonSidebar:
             self.copy_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
                                                             fg_color="transparent")
             self.create_or_launch_button = customtkinter.CTkButton(master=self.copy_button_frame, text='',
-                                                                   image=self.create_image,
-                                                                   fg_color=GREEN, command=self.parent.update_main_textbox,
+                                                                   image=self.create_image, fg_color=GREEN,
+                                                                   command=self.parent.update_main_textbox,
                                                                    width=self.button_width, height=self.button_height)
 
         else:
@@ -66,11 +66,9 @@ class RightButtonSidebar:
     def create_add_frame(self):
         # Last parameter is blank as we only need it if calling from outside this class
         # such as calling item from within the vault tab by clicking an item name to edit the item
-        Item(self.landing_tabview, self.parent, self.account_id, '')
+        ItemMenu(self.landing_tabview, self.parent, self.account_id, '')
 
     def launch_event(self):
         browser = webbrowser.get()
         website = f"https://{self.parent.website}"
         browser.open_new_tab(website)
-
-

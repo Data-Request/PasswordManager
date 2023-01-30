@@ -10,7 +10,7 @@ from new_folder import NewFolder
 # todo refresh secure notes when new one is added
 
 
-class Item:
+class ItemMenu:
     def __init__(self, landing_tabview, parent, account_id, item_id):
         super().__init__()
 
@@ -114,7 +114,7 @@ class Item:
             if self.item_id:    # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
                 with sqlite3.connect('data.db') as db:
-                    cursor = db.execute('SELECT * FROM Item WHERE item_id = ?', [self.item_id])
+                    cursor = db.execute('SELECT * FROM Logins WHERE login_id = ?', [self.item_id])
                     item = cursor.fetchall()
                 self.item_name_textbox.insert('end', item[0][2])
                 self.username_textbox.insert('end', item[0][3])
@@ -172,9 +172,9 @@ class Item:
         folder = self.folder_menu.get()
 
         with sqlite3.connect('data.db') as db:
-            db.execute('UPDATE Item '
-                       'SET item_name = ?, username = ?, key = ?, url = ?, folder = ?'
-                       'WHERE item_id = ?', (item_name, username, key, url, folder, self.item_id))
+            db.execute('UPDATE Logins '
+                       'SET login_name = ?, username = ?, key = ?, url = ?, folder = ?'
+                       'WHERE login_id = ?', (item_name, username, key, url, folder, self.item_id))
 
     def save_item(self):
         self.warning_label.configure(text='')
@@ -195,7 +195,7 @@ class Item:
             return
 
         with sqlite3.connect('data.db') as db:
-            db.execute('INSERT INTO Item (account_id, item_name, username, key, url, folder) VALUES (?,?,?,?,?,?)',
+            db.execute('INSERT INTO Logins (account_id, login_name, username, key, url, folder) VALUES (?,?,?,?,?,?)',
                        (self.account_id, item_name, username, key, url, folder))
 
         if self.parent.name == 'Generator':

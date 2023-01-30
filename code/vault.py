@@ -5,7 +5,7 @@ from colors import *
 from PIL import Image
 from right_button_sidebar import RightButtonSidebar
 import functools
-from item import Item
+from item_menu import ItemMenu
 from sql import get_folder_list
 from secure_note import SecureNote
 
@@ -113,7 +113,7 @@ class VaultTab:
     def create_folder_rows(self):
         current_folder = self.folder_menu.get()
         with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Item WHERE account_id = ? and folder = ?', (self.account_id, current_folder))
+            cursor = db.execute('SELECT * FROM Logins WHERE account_id = ? and folder = ?', (self.account_id, current_folder))
             folder_row = cursor.fetchall()
 
         for index in range(len(folder_row)):
@@ -134,7 +134,7 @@ class VaultTab:
             item_row.pack()
 
     def edit_item(self, item_id):
-        Item(self.landing_tabview, self, self.account_id, item_id)
+        ItemMenu(self.landing_tabview, self, self.account_id, item_id)
 
     def update_text_box(self, text, website):
         self.website = website
@@ -190,7 +190,7 @@ class VaultTab:
     def get_num_of_login(self):
         counter = 0
         with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Item WHERE account_id = ?', [self.account_id])
+            cursor = db.execute('SELECT * FROM Logins WHERE account_id = ?', [self.account_id])
             logins = cursor.fetchall()
             for row in logins:
                 counter += 1

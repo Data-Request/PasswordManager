@@ -4,6 +4,8 @@ import sqlite3
 from colors import *
 from datetime import datetime
 
+# todo refresh when a new note is created
+
 
 class SecureNote:
     def __init__(self, parent_frame, parent, account_id, note_id):

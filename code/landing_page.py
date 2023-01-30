@@ -8,10 +8,11 @@ from vault import VaultTab
 from generator import GeneratorTab
 from history import HistoryTab
 from settings import SettingsTab
-from support import generate_key
+from support import generate_key, get_timestamp
 from colors import *
 
 # todo find fix error when hitting back twice in a role
+
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -163,6 +164,12 @@ class LandingPage(customtkinter.CTk):
                 self.vault_image_frame.destroy()
                 self.login_frame.destroy()
                 self.warning_label.destroy()
+                with sqlite3.connect('data.db') as db:
+                    db.execute('UPDATE Person '
+                               'SET last_login = ?'
+                               'WHERE account_id = ?', (get_timestamp(),  self.account_id))
+
+
             else:
                 self.warning_label.configure(text='Incorrect username or password.')
 
@@ -198,8 +205,8 @@ class LandingPage(customtkinter.CTk):
                 salt = os.urandom(32)
                 key = generate_key(salt, master_password)
                 with sqlite3.connect('data.db') as db:
-                    db.execute('INSERT INTO Person (username, email, salt, key) VALUES (?,?,?,?)',
-                               (username, email, salt, key))
+                    db.execute('INSERT INTO Person (username, email, salt, key, account_creation) VALUES (?,?,?,?,?)',
+                               (username, email, salt, key, get_timestamp()))
                 self.new_account_frame.destroy()
                 self.warning_label.configure(text='')
                 self.create_log_in_widgets()

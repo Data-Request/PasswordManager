@@ -1,4 +1,5 @@
 import hashlib
+from datetime import datetime
 
 
 def generate_key(salt, password):
@@ -9,3 +10,8 @@ def generate_key(salt, password):
         100000  # It is recommended to use at least 100,000 iterations of SHA-256
     )
     return key
+
+
+def get_timestamp():
+    now = datetime.now()
+    return now.strftime("%c")
