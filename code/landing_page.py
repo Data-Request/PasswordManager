@@ -1,17 +1,13 @@
-import os
 import tkinter
 import customtkinter
-import sqlite3
 from PIL import Image
-from validate_email_address import validate_email
 from vault import VaultTab
 from generator import GeneratorTab
 from history import HistoryTab
 from settings import SettingsTab
-from support import generate_key, get_timestamp
+from account_setup import AccountSetup
+from account_login import AccountLogin
 from colors import *
-
-# todo find fix error when hitting back twice in a role
 
 
 class LandingPage(customtkinter.CTk):
@@ -25,14 +21,18 @@ class LandingPage(customtkinter.CTk):
         self.title('Password Manager')
         self.tabview_width = self.width - 50
         self.tabview_height = self.height - 30
+        self.account_id = None
 
         # Images
         self.vault_image = customtkinter.CTkImage(
             Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault-green.png"), size=(180, 180))
-        self.key_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
 
-        # Create Tabview
+        # Initialize
+        self.create_tabview()
+        self.create_vault_image()
+        self.create_log_in_widgets()
+
+    def create_tabview(self):
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=GREEN,
                                                              border_width=3, border_color=GREEN, state='disabled',
@@ -43,15 +43,6 @@ class LandingPage(customtkinter.CTk):
         self.landing_page_tabview.add("History")
         self.landing_page_tabview.add("Settings")
         self.landing_page_tabview.tab('Vault').grid_columnconfigure(0, weight=1)
-
-        self.warning_label = customtkinter.CTkLabel(master=self.landing_page_tabview.tab('Vault'),
-                                                    text='', text_color=RED)
-        self.warning_label.place(relx=0.5, rely=0.01, anchor=tkinter.N)
-
-        # Initialize
-        self.account_id = None
-        self.create_vault_image()
-        self.create_log_in_widgets()
 
     def create_vault_image(self):
         # Create Vault Image Frame
@@ -67,71 +58,16 @@ class LandingPage(customtkinter.CTk):
         self.vault_image_button.grid(row=0, column=0, pady=(0, 20), sticky="n")
 
     def create_log_in_widgets(self):
-        # Create Login Button Frame
-        self.login_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'), fg_color="transparent")
-        self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="w")
-        self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
-        self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
-        self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
-        self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
-                                                    text='                             Log in', image=self.key_image,
-                                                    compound='left', command=self.validate_log_info, anchor='w')
-        self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE, width=300,
-                                                   text='Your vault is locked. Verify your identity to continue.')
-        self.new_account_button = customtkinter.CTkButton(master=self.login_frame, text="Don't have an account?",
-                                                          text_color=BLACK, command=self.account_setup)
-        # Login Button Frame Placement
-        self.login_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
-        self.login_frame.grid_columnconfigure(1, weight=1)
-        self.login_frame.grid_rowconfigure(6, weight=1)
-        self.username_label.grid(row=0, column=0, sticky="ew")
-        self.username.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-        self.password_label.grid(row=2, column=0, sticky="ew")
-        self.password.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.login_button.grid(row=4, column=0, pady=(0, 20), sticky="ew")
-        self.verify_label.grid(row=5, column=0, pady=(0, 20), sticky="ew")
-        self.new_account_button.grid(row=6, column=0, pady=(100, 0), sticky="ew")
+        self.account_login = AccountLogin(self)
+        self.new_account_button = customtkinter.CTkButton(master=self.landing_page_tabview.tab('Vault'), text="Don't have an account?",
+                                                          text_color=BLACK, command=self.create_account_setup)
+        self.new_account_button.place(relx=0.5, rely=1, anchor=tkinter.S)
 
-    def account_setup(self):
-        self.login_frame.destroy()
-        # Create New Account Frame
-        self.new_account_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
-                                                        fg_color="transparent")
-        self.new_username_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Username:", anchor="w")
-        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username", width=300)
-        self.new_email_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Email:", anchor="w")
-        self.new_email = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email")
-        self.new_master_password_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Master Password:", anchor="w")
-        self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame,
-                                                          placeholder_text="Master Password")
-        self.new_master_password_verify_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Retype Master Password:", anchor="w")
-        self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame,
-                                                                 placeholder_text="Renter Master Password")
-        self.back_forward_button = customtkinter.CTkSegmentedButton(master=self.new_account_frame, width=300,
-                                                                    text_color=BLACK, values=["Back", "Create"],
-                                                                    unselected_color=GREEN, unselected_hover_color=DARK_GREEN,
-                                                                    command=self.back_forward_button)
-        # New Account Placement
-        self.new_account_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
-        self.new_account_frame.grid_columnconfigure(1, weight=1)
-        self.new_account_frame.grid_rowconfigure(9, weight=1)
-        self.new_username_label.grid(row=0, column=0, sticky="ew")
-        self.new_username.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-        self.new_email_label.grid(row=2, column=0, sticky="ew")
-        self.new_email.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password_label.grid(row=4, column=0, sticky="ew")
-        self.new_master_password.grid(row=5, column=0, pady=(0, 20), sticky="ew")
-        self.new_master_password_verify_label.grid(row=6, column=0, sticky="ew")
-        self.new_master_password_verify.grid(row=7, column=0, pady=(0, 20), sticky="ew")
-        self.back_forward_button.grid(row=8, column=0, pady=(42, 20), sticky="ew")
-
-    def back_forward_button(self, *args):
-        if args[0] == 'Create':
-            self.create_new_account()
-        else:
-            self.new_account_frame.destroy()
-            self.warning_label.configure(text='')
-            self.create_log_in_widgets()
+    def create_account_setup(self):
+        self.account_login.login_frame.destroy()
+        self.account_login.warning_label.destroy()
+        self.new_account_button.destroy()
+        self.account_setup = AccountSetup(self)
 
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
@@ -145,97 +81,3 @@ class LandingPage(customtkinter.CTk):
         GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         SettingsTab(self.landing_page_tabview, self.account_id)
-
-    def validate_log_info(self):
-        username = self.username.get().lower()
-        password = self.password.get()
-
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
-            user_account = cursor.fetchone()
-
-        if user_account is None:
-            self.warning_label.configure(text='Incorrect username or password.')
-        else:
-            current_key = generate_key(user_account[2], password)
-            if current_key == user_account[3]:
-                self.account_id = user_account[0]
-                self.initialize_all_tabs()
-                self.vault_image_frame.destroy()
-                self.login_frame.destroy()
-                self.warning_label.destroy()
-                with sqlite3.connect('data.db') as db:
-                    db.execute('UPDATE Person '
-                               'SET last_login = ?'
-                               'WHERE account_id = ?', (get_timestamp(),  self.account_id))
-
-
-            else:
-                self.warning_label.configure(text='Incorrect username or password.')
-
-    def create_new_account(self):
-        username = self.new_username.get().lower()
-        email = self.new_email.get().lower()
-        master_password = self.new_master_password.get()
-        master_password_verify = self.new_master_password_verify.get()
-
-        # Reset in case method is called twice in a row for different reasons
-        self.reset_new_account_text_color()
-
-        if self.check_for_blank_field(username, email, master_password, master_password_verify):
-            return
-        if not validate_email(email):
-            self.new_email.configure(text_color=RED)
-            self.warning_label.configure(text='Not a valid email.')
-            return
-        if master_password != master_password_verify:
-            self.new_master_password.configure(text_color=RED)
-            self.new_master_password_verify.configure(text_color=RED)
-            self.warning_label.configure(text='Passwords do not match.')
-            return
-
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT username FROM Person WHERE username = ?', [username])
-            username_row = cursor.fetchone()
-            cursor = db.execute('SELECT email FROM Person WHERE email = ?', [email])
-            email_row = cursor.fetchone()
-
-        if username_row is None:
-            if email_row is None:
-                salt = os.urandom(32)
-                key = generate_key(salt, master_password)
-                with sqlite3.connect('data.db') as db:
-                    db.execute('INSERT INTO Person (username, email, salt, key, account_creation) VALUES (?,?,?,?,?)',
-                               (username, email, salt, key, get_timestamp()))
-                self.new_account_frame.destroy()
-                self.warning_label.configure(text='')
-                self.create_log_in_widgets()
-            else:
-                self.new_email.configure(text_color=RED)
-                self.warning_label.configure(text='Email already in use.')
-        else:
-            self.new_username.configure(text_color=RED)
-            self.warning_label.configure(text='Username taken.')
-
-    def reset_new_account_text_color(self):
-        self.new_username.configure(text_color=WHITE)
-        self.new_email.configure(text_color=WHITE)
-        self.new_master_password.configure(text_color=WHITE)
-        self.new_master_password_verify.configure(text_color=WHITE)
-
-    def check_for_blank_field(self, username, email, master_password, master_password_verify):
-        if username == '':
-            self.warning_label.configure(text='Username is blank.')
-            return True
-        elif email == '':
-            self.warning_label.configure(text='Email is blank.')
-            return True
-        elif master_password == '':
-            self.warning_label.configure(text='Password is blank.')
-            return True
-        elif master_password_verify == '':
-            self.warning_label.configure(text='Please verify password.')
-            return True
-        else:
-            return False
-
