@@ -1,5 +1,5 @@
 import customtkinter
-import sqlite3
+from sql import create_database_tables
 from landing_page import LandingPage
 
 
@@ -10,25 +10,6 @@ from landing_page import LandingPage
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
-
-
-def create_database_tables():
-    with sqlite3.connect('data.db') as db:
-        db.execute(""" CREATE TABLE IF NOT EXISTS Person 
-        (account_id INTEGER PRIMARY KEY, username TEXT, email TEXT, salt TEXT, key TEXT )""")
-
-        db.execute(""" CREATE TABLE IF NOT EXISTS History
-        (account_id INTEGER, key TEXT, timestamp TEXT,
-        FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
-
-        db.execute(""" CREATE TABLE IF NOT EXISTS Item 
-        (item_id INTEGER PRIMARY KEY, account_id INTEGER, item_name TEXT, username TEXT, key TEXT, url TEXT, folder TEXT,
-        FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
-
-        db.execute(""" CREATE TABLE IF NOT EXISTS Secure_Notes 
-        (account_id INTEGER, item_name TEXT, note TEXT,
-        FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
-
 
 if __name__ == '__main__':
     create_database_tables()

@@ -66,7 +66,7 @@ class GeneratorTab:
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
         # Create Add / Copy / Create
-        self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.name, self.account_id)
+        self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.account_id)
 
         # Password Strength
         self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),

@@ -7,14 +7,13 @@ from item import Item
 
 
 class RightButtonSidebar:
-    def __init__(self, landing_tabview, parent, name, account_id):
+    def __init__(self, landing_tabview, parent, account_id):
         super().__init__()
 
         # General Setup
         self.account_id = account_id
         self.landing_tabview = landing_tabview
         self.parent = parent
-        self.name = name
         self.button_width = 25
         self.button_height = 25
 
@@ -67,7 +66,7 @@ class RightButtonSidebar:
     def create_add_frame(self):
         # Last parameter is blank as we only need it if calling from outside this class
         # such as calling item from within the vault tab by clicking an item name to edit the item
-        Item(self.landing_tabview, self.parent, self.name, self.account_id, '')
+        Item(self.landing_tabview, self.parent, self.account_id, '')
 
     def launch_event(self):
         browser = webbrowser.get()

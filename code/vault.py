@@ -6,6 +6,7 @@ from PIL import Image
 from right_button_sidebar import RightButtonSidebar
 import functools
 from item import Item
+from sql import get_folder_list
 
 
 class VaultTab:
@@ -50,7 +51,7 @@ class VaultTab:
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
         # Create Add / Copy / Launch
-        self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.name, self.account_id)
+        self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.account_id)
 
         """=======================       Tabview Section       ======================="""
 
@@ -76,16 +77,8 @@ class VaultTab:
         folder_canvas.create_window((0, 0), window=self.folder_scrollable_frame, anchor="nw")
         folder_canvas.configure(yscrollcommand=folder_scrollbar.set)
 
-        # Grab a unique set of all folders names used for the account, then sort in a list A-Z
-        folder_set = set()
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Item WHERE account_id = ?', (self.account_id,))
-            folder_row = cursor.fetchall()
-            for item in folder_row:
-                folder_set.add(item[6])
-        folder_list = list(folder_set)
-        folder_list.sort()
-
+        # Create folder Menu and place everything
+        folder_list = get_folder_list(self.account_id)
         self.folder_menu = customtkinter.CTkOptionMenu(master=folder_container, values=folder_list, text_color=BLACK,
                                                        width=360, fg_color=DARK_GREEN, dropdown_text_color=BLACK,
                                                        dropdown_fg_color=GREEN, command=self.update_folder_item_frame)
@@ -133,7 +126,7 @@ class VaultTab:
             item_row.pack()
 
     def edit_item(self, item_id):
-        Item(self.landing_tabview, self, 'Unsorted', self.account_id, item_id)
+        Item(self.landing_tabview, self, self.account_id, item_id)
 
     def update_text_box(self, text, website):
         self.website = website
