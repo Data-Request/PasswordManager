@@ -4,9 +4,9 @@ import sqlite3
 import secrets
 import string
 from colors import *
-from datetime import datetime
 from settings import MAX_HISTORY_ENTRIES
 from right_button_sidebar import RightButtonSidebar
+from datetime import datetime
 
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
@@ -397,9 +397,7 @@ class GeneratorTab:
         if self.special_characters.get() == 1:
             char_list += self.valid_symbols
         if self.ambiguous_checkbox.get() == 1:
-            char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O',
-                                                                                                              '').replace(
-                '0', '')
+            char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O', '').replace( '0', '')
         return char_list
 
     def reset_scoring_variables(self):
@@ -467,7 +465,7 @@ class GeneratorTab:
 
     def update_history(self):
         now = datetime.now()
-        date = now.strftime("%c")
+        timestamp = now.strftime("%c")
         key = self.main_textbox.get('0.0', 'end').strip()
 
         if self.password_tabview.get() == 'Username':
@@ -477,7 +475,7 @@ class GeneratorTab:
 
         self.check_if_max_history_entries()
         with sqlite3.connect('data.db') as db:
-            db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, date))
+            db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, timestamp))
 
     def check_if_already_entered(self, key):
         with sqlite3.connect('data.db') as db:

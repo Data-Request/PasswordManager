@@ -4,6 +4,7 @@ import sqlite3
 from PIL import Image
 from colors import *
 from sql import get_folder_list
+from secure_note import SecureNote
 
 
 class Item:
@@ -30,7 +31,7 @@ class Item:
         self.create_main_frame()
         if self.item_id == '':
             if self.parent.name == 'Vault':
-                    self.create_vault_option_frame()
+                self.create_vault_option_frame()
             else:
                 self.create_basic_option_frame()
         else:
@@ -124,19 +125,22 @@ class Item:
                                                        values=['Folder', 'Login', 'Secure Note'], width=300)
         self.options_frame.place(relx=0.5, rely=0.01, anchor=tkinter.N)
         self.options_frame.grid_columnconfigure(1, weight=1)
-        self.options_frame.grid_rowconfigure(13, weight=1)
+        self.options_frame.grid_rowconfigure(4, weight=1)
         self.main_label.grid(row=0, column=0, sticky="n")
         self.folder_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
-        self.folder_menu.grid(row=2, column=0, pady=(0, 20), sticky="w")
+        self.folder_menu.grid(row=2, column=0, pady=(0, 10), sticky="w")
 
     def type_chosen_event(self, *args):
+
         print(args)
         if args[0] == 'Folder':
-            print('folder')
+            if self.secure_note:
+                self.secure_note.destroy_secure_note_frame()
         elif args[0] == 'Secure Note':
-            print('secure note')
+            self.secure_note = SecureNote(self.options_frame, self, self.account_id)
         elif args[0] == 'Login':
-            print('login')
+            if self.secure_note:
+                self.secure_note.destroy_secure_note_frame()
 
     def cancel_or_save_event(self, *args):
         if args[0] == 'Cancel':
@@ -186,7 +190,6 @@ class Item:
             self.parent.update_history()
 
         self.destroy_main_frame()
-
 
     def destroy_main_frame(self):
         self.main_frame.destroy()

@@ -126,10 +126,8 @@ class LandingPage(customtkinter.CTk):
 
     def back_forward_button(self, *args):
         if args[0] == 'Create':
-            print('Create Account Check')
             self.create_new_account()
         else:
-            print('Going back')
             self.new_account_frame.destroy()
             self.warning_label.configure(text='')
             self.create_log_in_widgets()
