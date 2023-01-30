@@ -24,12 +24,7 @@ class VaultTab:
         self.button_height = 25
         self.main_textbox_width = width - 115
         self.main_textbox_height = 107
-        self.website = ''
-
-        # Tabview Variables
-        self.num_of_folders = 15
-        self.num_of_unsorted = 0
-        self.num_of_secure_notes = 0
+        self.website = ''   # Child uses to launch website
 
         # Images
         self.folder_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\folder-open-solid.png"), size=(20, 20))
@@ -40,7 +35,7 @@ class VaultTab:
 
         # Create and Place Bottom Label Frame
         self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent")
-        self.bottom_label = customtkinter.CTkLabel(master=self.bottom_label_frame, text=f'Number of Folders: {self.num_of_folders}')
+        self.bottom_label = customtkinter.CTkLabel(master=self.bottom_label_frame, text=f'')
         self.bottom_label_frame.grid_columnconfigure(1, weight=1)
         self.bottom_label_frame.grid_rowconfigure(1, weight=1)
         self.bottom_label_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
@@ -68,14 +63,17 @@ class VaultTab:
         self.password_tabview.add('Secure Notes')
 
         # Initialize
+        self.bottom_label.configure(text=f'Number of Logins: {self.get_num_of_login()}')
         self.create_folder_frame()
         self.create_secure_notes_frame()
 
     def password_tabview_event(self):
         # When a tabview button is clicked it with refresh the tab by calling an update
         if self.password_tabview.get() == 'Secure Notes':
+            self.bottom_label.configure(text=f'Number of Secure Notes: {self.get_num_of_secure_notes()}')
             self.update_secure_note_frame()
         else:
+            self.bottom_label.configure(text=f'Number of Logins: {self.get_num_of_login()}')
             self.update_folder_item_frame()
 
     def create_folder_frame(self):
@@ -188,5 +186,24 @@ class VaultTab:
 
     def edit_note(self, note_id):
         SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
+
+    def get_num_of_login(self):
+        counter = 0
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM Item WHERE account_id = ?', [self.account_id])
+            logins = cursor.fetchall()
+            for row in logins:
+                counter += 1
+        return counter
+
+    def get_num_of_secure_notes(self):
+        counter = 0
+        with sqlite3.connect('data.db') as db:
+            cursor = db.execute('SELECT * FROM Secure_Notes WHERE account_id = ?', [self.account_id])
+            logins = cursor.fetchall()
+            for row in logins:
+                counter += 1
+        print(counter)
+        return counter
 
 

@@ -101,9 +101,9 @@ class Item:
         self.cancel_save_button.grid(row=12, column=0, pady=(20, 0), sticky="n")
 
         # Set Defaults
-        if self.parent.name == 'Generator':
+        if self.parent.name == 'Generator':     # Coming from generator tab - password, or passphrase
             self.main_label.configure(text='Add Login')
-            if self.parent.password_tabview.get() == 'Username':
+            if self.parent.password_tabview.get() == 'Username':    # Coming from generator tab, username
                 if self.parent.random_word_checkbox.get() == 1:
                     self.username_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
                     self.username_textbox.configure(state='disabled')
@@ -111,21 +111,24 @@ class Item:
                 self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
                 self.password_textbox.configure(state='disabled')
         else:
-            self.main_label.configure(text='Edit Item')
-            with sqlite3.connect('data.db') as db:
-                cursor = db.execute('SELECT * FROM Item WHERE item_id = ?', [self.item_id])
-                item = cursor.fetchall()
-            self.item_name_textbox.insert('end', item[0][2])
-            self.username_textbox.insert('end', item[0][3])
-            self.password_textbox.insert('end', item[0][4])
-            self.website_textbox.insert('end', item[0][5])
+            if self.item_id:    # Coming from vault tab - edit item
+                self.main_label.configure(text='Edit Login')
+                with sqlite3.connect('data.db') as db:
+                    cursor = db.execute('SELECT * FROM Item WHERE item_id = ?', [self.item_id])
+                    item = cursor.fetchall()
+                self.item_name_textbox.insert('end', item[0][2])
+                self.username_textbox.insert('end', item[0][3])
+                self.password_textbox.insert('end', item[0][4])
+                self.website_textbox.insert('end', item[0][5])
+            else:    # Coming from vault tab - right menu - new login
+                self.main_label.configure(text='Add Login')
 
     def create_vault_option_frame(self):
         self.options_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color="transparent")
         self.main_label = customtkinter.CTkLabel(master=self.options_frame, text='Add Item')
         self.folder_label = customtkinter.CTkLabel(master=self.options_frame, text="Type:")
         self.folder_menu = customtkinter.CTkOptionMenu(master=self.options_frame, command=self.type_chosen_event,
-                                                       values=['Folder', 'Login', 'Secure Note'], width=300)
+                                                       values=['Folder', 'Secure Note', 'Login'], width=300)
         self.options_frame.place(relx=0.5, rely=0.01, anchor=tkinter.N)
         self.options_frame.grid_columnconfigure(1, weight=1)
         self.options_frame.grid_rowconfigure(4, weight=1)
@@ -141,14 +144,15 @@ class Item:
                 self.secure_note.destroy_secure_note_frame()
             self.new_folder = NewFolder(self.options_frame)
         elif args[0] == 'Secure Note':
-            self.secure_note = SecureNote(self.options_frame, self, self.account_id, None)
             if self.new_folder:
                 self.new_folder.destroy_new_folder_frame()
+            self.secure_note = SecureNote(self.options_frame, self, self.account_id, None)
         elif args[0] == 'Login':
             if self.new_folder:
                 self.new_folder.destroy_new_folder_frame()
             elif self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
+            self.login = self.create_basic_option_frame()
 
     def cancel_or_save_event(self, *args):
         if args[0] == 'Cancel':
