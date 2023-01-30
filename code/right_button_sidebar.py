@@ -73,3 +73,4 @@ class RightButtonSidebar:
         website = f"https://{self.parent.website}"
         browser.open_new_tab(website)
 
+

@@ -15,7 +15,7 @@ def create_database_tables():
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS Secure_Notes 
-        (account_id INTEGER, item_name TEXT, note TEXT, timestamp TEXT,
+        (note_id INTEGER PRIMARY KEY, account_id INTEGER, note_name TEXT, note TEXT, timestamp TEXT,
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
 

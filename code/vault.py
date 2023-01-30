@@ -7,6 +7,7 @@ from right_button_sidebar import RightButtonSidebar
 import functools
 from item import Item
 from sql import get_folder_list
+from secure_note import SecureNote
 
 
 class VaultTab:
@@ -35,6 +36,7 @@ class VaultTab:
         self.menu_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\menu.png"), size=(20, 20))
         self.user_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\user.png"), size=(20, 20))
         self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
+        self.note_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\note.png"), size=(20, 20))
 
         # Create and Place Bottom Label Frame
         self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent")
@@ -59,17 +61,25 @@ class VaultTab:
                                                          width=self.vault_tabview_width,
                                                          height=self.vault_tabview_height,
                                                          segmented_button_selected_color=GREEN, corner_radius=15,
-                                                         border_width=3, border_color=WHITE)
+                                                         border_width=3, border_color=WHITE,
+                                                         command=self.password_tabview_event)
         self.password_tabview.place(relx=0.5, rely=0.2, anchor=tkinter.N)
-        self.password_tabview.add('Folders')
+        self.password_tabview.add('Login')
         self.password_tabview.add('Secure Notes')
 
         # Initialize
         self.create_folder_frame()
         self.create_secure_notes_frame()
 
+    def password_tabview_event(self):
+        # When a tabview button is clicked it with refresh the tab by calling an update
+        if self.password_tabview.get() == 'Secure Notes':
+            self.update_secure_note_frame()
+        else:
+            self.update_folder_item_frame()
+
     def create_folder_frame(self):
-        folder_container = tkinter.Frame(self.password_tabview.tab('Folders'), bg=MID_DARK_GRAY2)
+        folder_container = tkinter.Frame(self.password_tabview.tab('Login'), bg=MID_DARK_GRAY2)
         folder_canvas = tkinter.Canvas(folder_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=320, width=355)
         folder_scrollbar = customtkinter.CTkScrollbar(folder_container, command=folder_canvas.yview)
         self.folder_scrollable_frame = tkinter.Frame(folder_canvas, bg=MID_DARK_GRAY2)
@@ -139,21 +149,44 @@ class VaultTab:
         note_container = tkinter.Frame(self.password_tabview.tab('Secure Notes'), bg=MID_DARK_GRAY2)
         note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380, width=355)
         note_scrollbar = customtkinter.CTkScrollbar(note_container, command=note_canvas.yview)
-        note_scrollable_frame = tkinter.Frame(note_canvas, bg=MID_DARK_GRAY2)
-        note_scrollable_frame.bind("<Configure>", lambda e: note_canvas.configure(scrollregion=note_canvas.bbox("all")))
-        note_canvas.create_window((0, 0), window=note_scrollable_frame, anchor="nw")
+        self.note_scrollable_frame = tkinter.Frame(note_canvas, bg=MID_DARK_GRAY2)
+        self.note_scrollable_frame.bind("<Configure>", lambda e: note_canvas.configure(scrollregion=note_canvas.bbox("all")))
+        note_canvas.create_window((0, 0), window=self.note_scrollable_frame, anchor="nw")
         note_canvas.configure(yscrollcommand=note_scrollbar.set)
+        note_container.pack()
+        note_canvas.pack(side="left", fill="both", expand=True)
+        note_scrollbar.pack(side="right", fill="y")
 
+        # Create a row frame and each item row
+        self.create_secure_notes_row_frame()
+        self.create_secure_notes_row()
+
+    def update_secure_note_frame(self, *args):
+        # Refreshes page by destroying and creating a new row_frame
+        self.secure_notes_row_frame.destroy()
+        self.create_secure_notes_row_frame()
+        self.create_secure_notes_row()
+
+    def create_secure_notes_row_frame(self):
+        # This frame is used to hold each item_row, it is destroyed and created to refresh the page
+        self.secure_notes_row_frame = customtkinter.CTkFrame(master=self.note_scrollable_frame, fg_color="transparent")
+        self.secure_notes_row_frame.pack()
+
+    def create_secure_notes_row(self):
         with sqlite3.connect('data.db') as db:
             cursor = db.execute('SELECT * FROM Secure_Notes WHERE account_id = ?', [self.account_id])
             note_row = cursor.fetchall()
 
         for index in range(len(note_row)):
-            customtkinter.CTkButton(master=note_scrollable_frame, text=note_row[index][1], image=self.menu_image, compound='left',
-                                    bg_color='transparent',  text_color=BLACK, anchor='w', width=350, corner_radius=15).pack(pady=(20, 0))
+            item_row = customtkinter.CTkFrame(master=self.secure_notes_row_frame, fg_color="transparent")
+            note_button = customtkinter.CTkButton(master=item_row, text=note_row[index][2],
+                                                  image=self.note_image, compound='left',  bg_color='transparent',
+                                                  text_color=BLACK, anchor='w', width=350, corner_radius=15,
+                                                  command=functools.partial(self.edit_note, (note_row[index][0])))
+            note_button.pack(pady=(20, 0))
+            item_row.pack()
 
-        note_container.pack()
-        note_canvas.pack(side="left", fill="both", expand=True)
-        note_scrollbar.pack(side="right", fill="y")
+    def edit_note(self, note_id):
+        SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
 
 
