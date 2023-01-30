@@ -5,6 +5,9 @@ from PIL import Image
 from colors import *
 from sql import get_folder_list
 from secure_note import SecureNote
+from new_folder import NewFolder
+
+# todo refresh secure notes when new one is added
 
 
 class Item:
@@ -41,11 +44,11 @@ class Item:
         # Create Main Frame
         if self.parent.name == 'Generator':
             self.main_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
-                                                     fg_color="transparent", height=600, width=400,
+                                                     fg_color="transparent", height=600, width=403,
                                                      border_width=3, border_color=WHITE, corner_radius=15)
         else:
             self.main_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent",
-                                                     height=600, width=400, border_width=3, border_color=WHITE,
+                                                     height=600, width=403, border_width=3, border_color=WHITE,
                                                      corner_radius=15)
         # History Textbox Frame Placement
         self.main_frame.place(relx=0.5, rely=0.01, anchor=tkinter.N)
@@ -99,7 +102,7 @@ class Item:
 
         # Set Defaults
         if self.parent.name == 'Generator':
-            self.main_label.configure(text='Add Item')
+            self.main_label.configure(text='Add Login')
             if self.parent.password_tabview.get() == 'Username':
                 if self.parent.random_word_checkbox.get() == 1:
                     self.username_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
@@ -130,16 +133,21 @@ class Item:
         self.folder_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
         self.folder_menu.grid(row=2, column=0, pady=(0, 10), sticky="w")
 
-    def type_chosen_event(self, *args):
+        self.new_folder = NewFolder(self.options_frame)
 
-        print(args)
+    def type_chosen_event(self, *args):
         if args[0] == 'Folder':
             if self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
+            self.new_folder = NewFolder(self.options_frame)
         elif args[0] == 'Secure Note':
-            self.secure_note = SecureNote(self.options_frame, self, self.account_id)
+            self.secure_note = SecureNote(self.options_frame, self, self.account_id, None)
+            if self.new_folder:
+                self.new_folder.destroy_new_folder_frame()
         elif args[0] == 'Login':
-            if self.secure_note:
+            if self.new_folder:
+                self.new_folder.destroy_new_folder_frame()
+            elif self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
 
     def cancel_or_save_event(self, *args):
@@ -193,4 +201,3 @@ class Item:
 
     def destroy_main_frame(self):
         self.main_frame.destroy()
-
