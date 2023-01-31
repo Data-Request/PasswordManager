@@ -1,8 +1,8 @@
 import tkinter
 import customtkinter
-import sqlite3
 from PIL import Image
-from support import generate_key, get_timestamp
+from support import generate_key
+from sql import update_last_login, get_user_account
 from colors import *
 
 
@@ -43,12 +43,11 @@ class AccountLogin:
         self.warning_label.place(relx=0.5, rely=0.01, anchor=tkinter.N)
 
     def validate_log_info(self):
-        username = self.username.get().lower()
+        username = self.username.get()
+        username.lower()
         password = self.password.get()
 
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
-            user_account = cursor.fetchone()
+        user_account = get_user_account(username)
 
         if user_account is None:
             self.warning_label.configure(text='Incorrect username or password.')
@@ -61,9 +60,6 @@ class AccountLogin:
                 self.parent.new_account_button.destroy()
                 self.login_frame.destroy()
                 self.warning_label.destroy()
-                with sqlite3.connect('data.db') as db:
-                    db.execute('UPDATE Person '
-                               'SET last_login = ?'
-                               'WHERE account_id = ?', (get_timestamp(),  self.parent.account_id))
+                update_last_login(self.parent.account_id)
             else:
                 self.warning_label.configure(text='Incorrect username or password.')

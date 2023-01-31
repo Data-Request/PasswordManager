@@ -1,9 +1,9 @@
 import os
 import tkinter
 import customtkinter
-import sqlite3
 from validate_email_address import validate_email
-from support import generate_key, get_timestamp
+from support import generate_key
+from sql import create_new_user_account, get_username_with_username, get_email_with_email
 from colors import *
 
 
@@ -81,19 +81,14 @@ class AccountSetup:
             self.warning_label.configure(text='Passwords do not match.')
             return
 
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT username FROM Person WHERE username = ?', [username])
-            username_row = cursor.fetchone()
-            cursor = db.execute('SELECT email FROM Person WHERE email = ?', [email])
-            email_row = cursor.fetchone()
+        username_row = get_username_with_username(username)
+        email_row = get_email_with_email(email)
 
         if username_row is None:
             if email_row is None:
                 salt = os.urandom(32)
                 key = generate_key(salt, master_password)
-                with sqlite3.connect('data.db') as db:
-                    db.execute('INSERT INTO Person (username, email, salt, key, account_creation) VALUES (?,?,?,?,?)',
-                               (username, email, salt, key, get_timestamp()))
+                create_new_user_account(username, email, salt, key)
                 self.new_account_frame.destroy()
                 self.warning_label.destroy()
                 self.parent.create_log_in_widgets()

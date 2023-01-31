@@ -4,7 +4,7 @@ import secrets
 import string
 from colors import *
 from right_button_sidebar import RightButtonSidebar
-from sql import create_new_history, get_all_from_history, delete_oldest_history_if_at_limit, get_email
+from sql import *
 from support import create_username
 
 # todo password strength fix
@@ -364,7 +364,7 @@ class GeneratorTab:
     def create_sub_address(self):
         char_list = string.ascii_lowercase + string.digits
         extra_letters = ''
-        email = get_email(self.account_id)
+        email = get_email_with_account_id(self.account_id)
         email = email.split('@')
         for i in range(0, 8):
             character = secrets.choice(char_list)

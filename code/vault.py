@@ -24,7 +24,6 @@ class VaultTab:
         self.main_textbox_width = width - 115
         self.main_textbox_height = 107
         self.website = ''   # Child uses to launch website
-
         # Images
         self.folder_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\folder-open-solid.png"), size=(20, 20))
         self.menu_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\menu.png"), size=(20, 20))

@@ -29,10 +29,43 @@ def create_database_tables():
 """=======================                       Person Section                               ======================="""
 
 
-def get_email(account_id):
+def get_user_account(username):
+    with sqlite3.connect('data.db') as db:
+        cursor = db.execute('SELECT account_id, username, salt, key FROM Person WHERE username = ?', [username])
+        return cursor.fetchone()
+
+
+def get_username_with_username(username):
+    # Seem redundant, but it is used to see if a username is already in use
+    with sqlite3.connect('data.db') as db:
+        cursor = db.execute('SELECT username FROM Person WHERE username = ?', [username])
+        return cursor.fetchone()
+
+
+def get_email_with_account_id(account_id):
+    # Seem redundant, but it is used to see if an email is already in use
     with sqlite3.connect('data.db') as db:
         cursor = db.execute('SELECT email FROM Person WHERE account_id = ?', [account_id])
         return cursor.fetchone()[0]
+
+
+def get_email_with_email(email):
+    with sqlite3.connect('data.db') as db:
+        cursor = db.execute('SELECT email FROM Person WHERE email = ?', [email])
+        return cursor.fetchone()
+
+
+def create_new_user_account(username, email, salt, key):
+    with sqlite3.connect('data.db') as db:
+        db.execute('INSERT INTO Person (username, email, salt, key, account_creation) VALUES (?,?,?,?,?)',
+                   (username, email, salt, key, get_timestamp()))
+
+
+def update_last_login(account_id):
+    with sqlite3.connect('data.db') as db:
+        db.execute('UPDATE Person '
+                   'SET last_login = ?'
+                   'WHERE account_id = ?', (get_timestamp(), account_id))
 
 
 """=======================                       Login Section                                ======================="""

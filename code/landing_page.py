@@ -26,6 +26,8 @@ class LandingPage(customtkinter.CTk):
         # Images
         self.vault_image = customtkinter.CTkImage(
             Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault-green.png"), size=(180, 180))
+        self.account_image = customtkinter.CTkImage(
+            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\account.png"), size=(20, 20))
 
         # Initialize
         self.create_tabview()
@@ -59,9 +61,11 @@ class LandingPage(customtkinter.CTk):
 
     def create_log_in_widgets(self):
         self.account_login = AccountLogin(self)
-        self.new_account_button = customtkinter.CTkButton(master=self.landing_page_tabview.tab('Vault'), text="Don't have an account?",
-                                                          text_color=BLACK, command=self.create_account_setup)
-        self.new_account_button.place(relx=0.5, rely=1, anchor=tkinter.S)
+        self.new_account_button = customtkinter.CTkButton(master=self.landing_page_tabview.tab('Vault'), width=300,
+                                                          text="                Don't have an account?",
+                                                          text_color=BLACK, image=self.account_image, compound='left',
+                                                          command=self.create_account_setup, anchor='w')
+        self.new_account_button.place(relx=0.5, rely=0.98, anchor=tkinter.S)
 
     def create_account_setup(self):
         self.account_login.login_frame.destroy()
