@@ -10,7 +10,7 @@ def create_database_tables():
     with sqlite3.connect('data.db') as db:
         db.execute(""" CREATE TABLE IF NOT EXISTS Person 
         (account_id INTEGER PRIMARY KEY, username TEXT, email TEXT, 
-        salt TEXT, key TEXT, account_creation TEXT, last_login TEXT)""")
+        salt TEXT, key TEXT, account_creation TEXT, last_login TEXT, folder_list Text)""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS History
         (account_id INTEGER, key TEXT, timestamp TEXT,
@@ -55,10 +55,18 @@ def get_email_with_email(email):
         return cursor.fetchone()
 
 
+def get_folder_list(account_id):
+    with sqlite3.connect('data.db') as db:
+        cursor = db.execute('SELECT folder_list FROM Person WHERE account_id = ?', (account_id,))
+        folder_string = cursor.fetchone()[0]
+        folder_list = folder_string.split(',')
+    return folder_list
+
+
 def create_new_user_account(username, email, salt, key):
     with sqlite3.connect('data.db') as db:
-        db.execute('INSERT INTO Person (username, email, salt, key, account_creation) VALUES (?,?,?,?,?)',
-                   (username, email, salt, key, get_timestamp()))
+        db.execute('INSERT INTO Person (username, email, salt, key, account_creation, folder_list) VALUES (?,?,?,?,?,?)',
+                   (username, email, salt, key, get_timestamp(), 'Unsorted'))
 
 
 def update_last_login(account_id):
@@ -66,6 +74,13 @@ def update_last_login(account_id):
         db.execute('UPDATE Person '
                    'SET last_login = ?'
                    'WHERE account_id = ?', (get_timestamp(), account_id))
+
+
+def update_folder_list(folder_string, account_id):
+    with sqlite3.connect('data.db') as db:
+        db.execute('UPDATE Person '
+                   'SET folder_list = ?'
+                   'WHERE account_id = ?', (folder_string, account_id))
 
 
 """=======================                       Login Section                                ======================="""
@@ -94,22 +109,6 @@ def update_login(item_name, username, key, url, folder, login_id):
         db.execute('UPDATE Logins '
                    'SET login_name = ?, username = ?, key = ?, url = ?, folder = ?'
                    'WHERE login_id = ?', (item_name, username, key, url, folder, login_id))
-
-
-def get_folder_list(account_id):
-    # Grab a unique set of all folders names used for the account, then sort in a list A-Z
-    folder_set = set()
-    with sqlite3.connect('data.db') as db:
-        cursor = db.execute('SELECT * FROM Logins WHERE account_id = ?', (account_id,))
-        folder_row = cursor.fetchall()
-        for item in folder_row:
-            folder_set.add(item[6])
-    folder_list = list(folder_set)
-    folder_list.sort()
-    # If folder list is empty(new account) or no folder created, then default to unsorted
-    if not folder_list:
-        folder_list = ['Unsorted']
-    return folder_list
 
 
 def get_num_of_login(account_id):

@@ -6,7 +6,7 @@ from sql import get_folder_list, get_all_from_logins, update_login, create_new_l
 from secure_note import SecureNote
 from new_folder import NewFolder
 
-# todo refresh secure notes when new one is added
+# todo refresh folders, and secure notes when new one is added
 
 
 class ItemMenu:
@@ -133,13 +133,13 @@ class ItemMenu:
         self.folder_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
         self.folder_menu.grid(row=2, column=0, pady=(0, 10), sticky="w")
 
-        self.new_folder = NewFolder(self.options_frame)
+        self.new_folder = NewFolder(self, self.options_frame, self.account_id)
 
     def type_chosen_event(self, *args):
         if args[0] == 'Folder':
             if self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
-            self.new_folder = NewFolder(self.options_frame)
+            self.new_folder = NewFolder(self, self.options_frame, self.account_id)
         elif args[0] == 'Secure Note':
             if self.new_folder:
                 self.new_folder.destroy_new_folder_frame()
