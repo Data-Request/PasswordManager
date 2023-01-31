@@ -1,11 +1,12 @@
 import tkinter
 import customtkinter
-import sqlite3
 import functools
 from PIL import Image
 from colors import *
 from settings import MAX_HISTORY_ENTRIES
+from sql import get_all_from_history, delete_all_from_history
 
+# todo fix history refresh to happen by destroy frames not buttons - currently a mess
 # todo find a way to reset scrollbar.
 """problem: full history, scroll to bottom,  delete history, then generate new history 
 and click back on history tab, you cant see all history"""
@@ -48,7 +49,7 @@ class HistoryTab:
         self.max_entries_label.place(relx=0.25, rely=1, anchor=tkinter.S)
         # Clear History Button
         self.clear_history_button = customtkinter.CTkButton(master=self.landing_tabview.tab('History'),
-                                                            text='Clear History', command=self.clear_history_entries,
+                                                            text='Clear History', command=self.clear_history_event,
                                                             fg_color=GREEN, text_color=BLACK, image=self.delete_image,
                                                             width=self.clear_history_width,
                                                             height=self.clear_history_height)
@@ -70,12 +71,9 @@ class HistoryTab:
         scrollbar.pack(side="right", fill="y")
 
     def create_buttons(self):
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
-            history_row = cursor.fetchall()
-            history_row.reverse()
+        history = get_all_from_history(self.account_id)
 
-        for index in (range(len(history_row))):
+        for index in (range(len(history))):
             self.history_textbox[index] = customtkinter.CTkTextbox(master=self.scrollable_frame,
                                                                    width=self.textbox_width, font=('Arial', 16),
                                                                    height=self.textbox_height, corner_radius=15)
@@ -90,9 +88,9 @@ class HistoryTab:
             self.date_times[index].grid(row=(index + index + 1), column=0, padx=(30, 0), pady=(0, 15), sticky="w")
             self.copy_buttons[index].grid(row=(index + index), rowspan=1, column=1, sticky="e")
 
-            self.history_textbox[index].insert('end', history_row[index][1])
+            self.history_textbox[index].insert('end', history[index][1])
             self.history_textbox[index].configure(state='disabled')
-            self.date_times[index].configure(text=history_row[index][2])
+            self.date_times[index].configure(text=history[index][2])
 
     def destroy_history_tab(self):
         for index in range(len(self.history_textbox)):
@@ -104,9 +102,8 @@ class HistoryTab:
                 self.copy_buttons[index].destroy()
                 self.copy_buttons[index] = None
 
-    def clear_history_entries(self):
-        with sqlite3.connect('data.db') as db:
-            db.execute('DELETE FROM History WHERE account_id = ?', [self.account_id])
+    def clear_history_event(self):
+        delete_all_from_history(self.account_id)
         self.destroy_history_tab()
 
     def copy_text(self, index):

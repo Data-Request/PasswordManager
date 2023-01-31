@@ -12,9 +12,9 @@ class AccountSetup:
         super().__init__()
 
         self.parent = parent
-        self.account_setup()
+        self.create_new_account_frame()
 
-    def account_setup(self):
+    def create_new_account_frame(self):
         self.new_account_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.new_username_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Username:", anchor="w")

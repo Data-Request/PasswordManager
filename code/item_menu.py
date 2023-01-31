@@ -1,9 +1,8 @@
 import tkinter
 import customtkinter
-import sqlite3
 from PIL import Image
 from colors import *
-from sql import get_folder_list
+from sql import get_folder_list, get_all_from_logins, update_login, create_new_login
 from secure_note import SecureNote
 from new_folder import NewFolder
 
@@ -113,13 +112,11 @@ class ItemMenu:
         else:
             if self.item_id:    # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
-                with sqlite3.connect('data.db') as db:
-                    cursor = db.execute('SELECT * FROM Logins WHERE login_id = ?', [self.item_id])
-                    item = cursor.fetchall()
-                self.item_name_textbox.insert('end', item[0][2])
-                self.username_textbox.insert('end', item[0][3])
-                self.password_textbox.insert('end', item[0][4])
-                self.website_textbox.insert('end', item[0][5])
+                login = get_all_from_logins(self.item_id)
+                self.item_name_textbox.insert('end', login[0][2])
+                self.username_textbox.insert('end', login[0][3])
+                self.password_textbox.insert('end', login[0][4])
+                self.website_textbox.insert('end', login[0][5])
             else:    # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
 
@@ -158,33 +155,29 @@ class ItemMenu:
         if args[0] == 'Cancel':
             self.destroy_main_frame()
         elif self.item_id == '':
-            self.save_item()
+            self.save_login()
         else:
-            self.edit_item()
+            self.edit_login()
             self.destroy_main_frame()
 
-    def edit_item(self):
-        self.warning_label.configure(text='')
-        item_name = self.item_name_textbox.get('0.0', 'end').strip()
+    def get_all_login_fields(self):
+        login_name = self.item_name_textbox.get('0.0', 'end').strip()
         username = self.username_textbox.get('0.0', 'end').strip()
         key = self.password_textbox.get('0.0', 'end').strip()
         url = self.website_textbox.get('0.0', 'end').strip()
         folder = self.folder_menu.get()
+        return login_name, username, key, url, folder
 
-        with sqlite3.connect('data.db') as db:
-            db.execute('UPDATE Logins '
-                       'SET login_name = ?, username = ?, key = ?, url = ?, folder = ?'
-                       'WHERE login_id = ?', (item_name, username, key, url, folder, self.item_id))
-
-    def save_item(self):
+    def edit_login(self):
         self.warning_label.configure(text='')
-        item_name = self.item_name_textbox.get('0.0', 'end').strip()
-        username = self.username_textbox.get('0.0', 'end').strip()
-        key = self.password_textbox.get('0.0', 'end').strip()
-        url = self.website_textbox.get('0.0', 'end').strip()
-        folder = self.folder_menu.get()
+        login_name, username, key, url, folder = self.get_all_login_fields()
+        update_login(login_name, username, key, url, folder, self.item_id)
 
-        if item_name == '':
+    def save_login(self):
+        self.warning_label.configure(text='')
+        login_name, username, key, url, folder = self.get_all_login_fields()
+
+        if login_name == '':
             self.warning_label.configure(text='Website Name is blank.')
             return
         elif username == '':
@@ -194,9 +187,7 @@ class ItemMenu:
             self.warning_label.configure(text='URL is blank.')
             return
 
-        with sqlite3.connect('data.db') as db:
-            db.execute('INSERT INTO Logins (account_id, login_name, username, key, url, folder) VALUES (?,?,?,?,?,?)',
-                       (self.account_id, item_name, username, key, url, folder))
+        create_new_login(self.account_id, login_name, username, key, url, folder)
 
         if self.parent.name == 'Generator':
             self.parent.update_history()

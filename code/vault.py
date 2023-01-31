@@ -1,12 +1,11 @@
 import tkinter
 import customtkinter
-import sqlite3
 from colors import *
 from PIL import Image
 from right_button_sidebar import RightButtonSidebar
 import functools
 from item_menu import ItemMenu
-from sql import get_folder_list
+from sql import *
 from secure_note import SecureNote
 
 
@@ -35,7 +34,8 @@ class VaultTab:
 
         # Create and Place Bottom Label Frame
         self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent")
-        self.bottom_label = customtkinter.CTkLabel(master=self.bottom_label_frame, text=f'')
+        self.bottom_label = customtkinter.CTkLabel(master=self.bottom_label_frame,
+                                                   text=f'Number of Logins: {get_num_of_login(self.account_id)}')
         self.bottom_label_frame.grid_columnconfigure(1, weight=1)
         self.bottom_label_frame.grid_rowconfigure(1, weight=1)
         self.bottom_label_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
@@ -50,8 +50,12 @@ class VaultTab:
         # Create Add / Copy / Launch
         self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.account_id)
 
-        """=======================       Tabview Section       ======================="""
+        # Initialize
+        self.create_vault_tabview()
+        self.create_folder_frame()
+        self.create_secure_notes_frame()
 
+    def create_vault_tabview(self):
         self.password_tabview = customtkinter.CTkTabview(master=self.landing_tabview.tab('Vault'),
                                                          width=self.vault_tabview_width,
                                                          height=self.vault_tabview_height,
@@ -62,18 +66,14 @@ class VaultTab:
         self.password_tabview.add('Login')
         self.password_tabview.add('Secure Notes')
 
-        # Initialize
-        self.bottom_label.configure(text=f'Number of Logins: {self.get_num_of_login()}')
-        self.create_folder_frame()
-        self.create_secure_notes_frame()
-
     def password_tabview_event(self):
         # When a tabview button is clicked it with refresh the tab by calling an update
         if self.password_tabview.get() == 'Secure Notes':
-            self.bottom_label.configure(text=f'Number of Secure Notes: {self.get_num_of_secure_notes()}')
+            notes = get_all_from_secure_notes(self.account_id)
+            self.bottom_label.configure(text=f'Number of Secure Notes: {len(notes)}')
             self.update_secure_note_frame()
         else:
-            self.bottom_label.configure(text=f'Number of Logins: {self.get_num_of_login()}')
+            self.bottom_label.configure(text=f'Number of Logins: {get_num_of_login(self.account_id)}')
             self.update_folder_item_frame()
 
     def create_folder_frame(self):
@@ -112,9 +112,7 @@ class VaultTab:
 
     def create_folder_rows(self):
         current_folder = self.folder_menu.get()
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Logins WHERE account_id = ? and folder = ?', (self.account_id, current_folder))
-            folder_row = cursor.fetchall()
+        folder_row = get_each_login_within_folder(self.account_id, current_folder)
 
         for index in range(len(folder_row)):
             item_row = customtkinter.CTkFrame(master=self.row_frame, fg_color="transparent")
@@ -171,39 +169,17 @@ class VaultTab:
         self.secure_notes_row_frame.pack()
 
     def create_secure_notes_row(self):
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Secure_Notes WHERE account_id = ?', [self.account_id])
-            note_row = cursor.fetchall()
-
-        for index in range(len(note_row)):
+        notes = get_all_from_secure_notes(self.account_id)
+        for index in range(len(notes)):
             item_row = customtkinter.CTkFrame(master=self.secure_notes_row_frame, fg_color="transparent")
-            note_button = customtkinter.CTkButton(master=item_row, text=note_row[index][2],
+            note_button = customtkinter.CTkButton(master=item_row, text=notes[index][2],
                                                   image=self.note_image, compound='left',  bg_color='transparent',
                                                   text_color=BLACK, anchor='w', width=350, corner_radius=15,
-                                                  command=functools.partial(self.edit_note, (note_row[index][0])))
+                                                  command=functools.partial(self.edit_note, (notes[index][0])))
             note_button.pack(pady=(20, 0))
             item_row.pack()
 
     def edit_note(self, note_id):
         SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
-
-    def get_num_of_login(self):
-        counter = 0
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Logins WHERE account_id = ?', [self.account_id])
-            logins = cursor.fetchall()
-            for row in logins:
-                counter += 1
-        return counter
-
-    def get_num_of_secure_notes(self):
-        counter = 0
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM Secure_Notes WHERE account_id = ?', [self.account_id])
-            logins = cursor.fetchall()
-            for row in logins:
-                counter += 1
-        print(counter)
-        return counter
 
 

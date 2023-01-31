@@ -1,8 +1,7 @@
 import tkinter
 import customtkinter
-import sqlite3
 from colors import *
-from datetime import datetime
+from sql import get_single_secure_note, create_new_secure_note, update_secure_note, delete_secure_note
 
 # todo refresh when a new note is created
 
@@ -55,12 +54,10 @@ class SecureNote:
             self.note_textbox.configure(height=self.note_textbox_height + 80)
             self.cancel_save_button.configure(values=['Cancel', 'Save', 'Delete'])
             self.cancel_save_button.grid(row=5, column=0, pady=(0, 30), sticky="n")
-
-            with sqlite3.connect('data.db') as db:
-                cursor = db.execute('SELECT * FROM Secure_Notes WHERE note_id = ?', [self.note_id])
-                note_row = cursor.fetchall()
-            self.name_textbox.insert('end', note_row[0][2])
-            self.note_textbox.insert('end', note_row[0][3])
+            # Get and display note from db
+            note = get_single_secure_note(self.note_id)
+            self.name_textbox.insert('end', note[0][2])
+            self.note_textbox.insert('end', note[0][3])
         else:      # We are adding an item so we set default placements
             self.name_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
             self.note_label.grid(row=3, column=0, sticky="w")
@@ -90,26 +87,14 @@ class SecureNote:
             self.crate_delete_note_frame()
 
     def save_note(self):
-        # Grab timestamp and save item to database
-        now = datetime.now()
-        timestamp = now.strftime("%c")
         note_name = self.name_textbox.get('0.0', 'end').strip()
         note = self.note_textbox.get('0.0', 'end').strip()
-        with sqlite3.connect('data.db') as db:
-            db.execute('INSERT INTO Secure_Notes '
-                       '(account_id, note_name, note, timestamp) VALUES (?,?,?,?)',
-                       (self.account_id, note_name, note, timestamp))
+        create_new_secure_note(self.account_id, note_name, note)
 
     def edit_note(self):
-        # Grab timestamp and save item to database with updated info
-        now = datetime.now()
-        timestamp = now.strftime("%c")
         note_name = self.name_textbox.get('0.0', 'end').strip()
         note = self.note_textbox.get('0.0', 'end').strip()
-        with sqlite3.connect('data.db') as db:
-            db.execute('UPDATE Secure_Notes '
-                       'SET note_name = ?, note = ?, timestamp = ?'
-                       'WHERE note_id = ?', (note_name, note, timestamp, self.note_id))
+        update_secure_note(note_name, note, self.note_id)
 
     def crate_delete_note_frame(self):
         # Create Delete Note Confirmation Frame
@@ -129,8 +114,7 @@ class SecureNote:
         # Handles the segmented button event, they always send a value with command
         # Deletes the secure note from database, and resets screen
         if args[0] == 'Yes':
-            with sqlite3.connect('data.db') as db:
-                db.execute('DELETE FROM Secure_Notes WHERE note_id = ?', [self.note_id])
+            delete_secure_note(self.note_id)
         self.delete_note_frame.destroy()
         self.destroy_secure_note_frame()
         self.parent.update_secure_note_frame()

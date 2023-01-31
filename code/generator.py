@@ -1,12 +1,11 @@
 import tkinter
 import customtkinter
-import sqlite3
 import secrets
 import string
 from colors import *
-from settings import MAX_HISTORY_ENTRIES
 from right_button_sidebar import RightButtonSidebar
-from datetime import datetime
+from sql import create_new_history, get_all_from_history, delete_oldest_history_if_at_limit, get_email
+from support import create_username
 
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
@@ -360,29 +359,16 @@ class GeneratorTab:
         self.change_main_text_box(current_passphrase)
 
     def create_random_word(self):
-        random_word = ''
-        random_numbers = ''
-        for i in range(0, secrets.randbelow(5)):
-            random_numbers += str(secrets.randbelow(10))
-
-        random_index = secrets.randbelow(58110)
-        with open(r'C:\Users\xjord\Desktop\PasswordManager\word_files\mielie_stronk_list_58110', 'r') as file:
-            lines = file.readlines()
-            current_word = lines[random_index].strip()
-            random_word += f'{current_word}{random_numbers}'
-
-        self.change_main_text_box(random_word)
+        self.change_main_text_box(create_username())
 
     def create_sub_address(self):
         char_list = string.ascii_lowercase + string.digits
         extra_letters = ''
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT email FROM Person WHERE account_id = ?', [self.account_id])
-            email = cursor.fetchone()[0]
-            email = email.split('@')
-            for i in range(0, 8):
-                character = secrets.choice(char_list)
-                extra_letters += character
+        email = get_email(self.account_id)
+        email = email.split('@')
+        for i in range(0, 8):
+            character = secrets.choice(char_list)
+            extra_letters += character
         sub_address = email[0] + '+' + extra_letters + '@' + email[1]
         self.change_main_text_box(sub_address)
 
@@ -464,8 +450,6 @@ class GeneratorTab:
         self.calc_password_strength_score()
 
     def update_history(self):
-        now = datetime.now()
-        timestamp = now.strftime("%c")
         key = self.main_textbox.get('0.0', 'end').strip()
 
         if self.password_tabview.get() == 'Username':
@@ -473,25 +457,15 @@ class GeneratorTab:
         if self.check_if_already_entered(key):
             return
 
-        self.check_if_max_history_entries()
-        with sqlite3.connect('data.db') as db:
-            db.execute('INSERT INTO History (account_id, key, timestamp) VALUES (?, ?,?)', (self.account_id, key, timestamp))
+        delete_oldest_history_if_at_limit(self.account_id)
+        create_new_history(self.account_id, key)
 
     def check_if_already_entered(self, key):
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
-            history = cursor.fetchall()
-            for row in history:
-                if row[1] == key:
-                    return True
-            return False
-
-    def check_if_max_history_entries(self):
-        with sqlite3.connect('data.db') as db:
-            cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [self.account_id])
-            history = cursor.fetchall()
-            if len(history) == MAX_HISTORY_ENTRIES:
-                db.execute('Delete FROM History WHERE timestamp = ?', [history[0][2]])
+        history = get_all_from_history(self.account_id)
+        for item_row in history:
+            if item_row[1] == key:
+                return True
+        return False
 
     def calc_password_strength_score(self):
         # Positive Scores
