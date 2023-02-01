@@ -7,6 +7,7 @@ from secure_note import SecureNote
 from new_folder import NewFolder
 
 # todo refresh folders, and secure notes when new one is added
+# todo update save/cancel button by refreshing the frame otherwise it has outdate infomation
 
 
 class ItemMenu:
@@ -18,8 +19,6 @@ class ItemMenu:
         self.item_id = item_id
         self.landing_tabview = landing_tabview
         self.parent = parent
-        self.button_width = 25
-        self.button_height = 25
         self.textbox_width = 300
         self.textbox_height = 10
 
@@ -60,22 +59,16 @@ class ItemMenu:
         self.main_label = customtkinter.CTkLabel(master=self.options_frame)
         self.folder_label = customtkinter.CTkLabel(master=self.options_frame, text="Folder:")
         self.folder_menu = customtkinter.CTkOptionMenu(master=self.options_frame, values=folder_list, width=300)
-        self.item_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
-        self.item_name_textbox = customtkinter.CTkTextbox(master=self.options_frame,
-                                                          width=self.textbox_width, font=('Arial', 16),
-                                                          height=self.textbox_height, corner_radius=15)
+        self.login_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
+        self.login_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
         self.username_label = customtkinter.CTkLabel(master=self.options_frame, text="Username:")
-        self.username_textbox = customtkinter.CTkTextbox(master=self.options_frame,
-                                                         width=self.textbox_width, font=('Arial', 16),
-                                                         height=self.textbox_height, corner_radius=15)
+        self.username_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
         self.password_label = customtkinter.CTkLabel(master=self.options_frame, text="Password:")
         self.password_textbox = customtkinter.CTkTextbox(master=self.options_frame, state='normal',
                                                          width=self.textbox_width, font=('Arial', 16),
                                                          height=self.textbox_height, corner_radius=15)
         self.website_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
-        self.website_textbox = customtkinter.CTkTextbox(master=self.options_frame,
-                                                        width=self.textbox_width, font=('Arial', 16),
-                                                        height=self.textbox_height, corner_radius=15)
+        self.website_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
         self.warning_label = customtkinter.CTkLabel(master=self.options_frame, text='', text_color=RED)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.options_frame, width=300,
                                                                    text_color=BLACK, values=["Cancel", "Save"],
@@ -88,14 +81,14 @@ class ItemMenu:
         self.main_label.grid(row=0, column=0, sticky="n")
         self.folder_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
         self.folder_menu.grid(row=2, column=0, pady=(0, 20), sticky="w")
-        self.item_name_label.grid(row=3, column=0, sticky="w")
-        self.item_name_textbox.grid(row=4, column=0, pady=(0, 10), sticky="n")
+        self.login_name_label.grid(row=3, column=0, sticky="w")
+        self.login_name_entry.grid(row=4, column=0, pady=(0, 10), sticky="n")
         self.username_label.grid(row=5, column=0, sticky="w")
-        self.username_textbox.grid(row=6, column=0, pady=(0, 10), sticky="n")
+        self.username_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
         self.password_label.grid(row=7, column=0, sticky="w")
         self.password_textbox.grid(row=8, column=0, pady=(0, 10), sticky="n")
         self.website_label.grid(row=9, column=0, sticky="w")
-        self.website_textbox.grid(row=10, column=0, pady=(0, 10), sticky="n")
+        self.website_entry.grid(row=10, column=0, pady=(0, 10), sticky="n")
         self.warning_label.grid(row=11, column=0, pady=(0, 5), sticky="n")
         self.cancel_save_button.grid(row=12, column=0, pady=(20, 0), sticky="n")
 
@@ -104,8 +97,8 @@ class ItemMenu:
             self.main_label.configure(text='Add Login')
             if self.parent.password_tabview.get() == 'Username':    # Coming from generator tab, username
                 if self.parent.random_word_checkbox.get() == 1:
-                    self.username_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
-                    self.username_textbox.configure(state='disabled')
+                    self.username_entry.insert(0, self.parent.main_textbox.get('0.0', 'end').strip())
+                    self.username_entry.configure(state='disabled')
             else:
                 self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
                 self.password_textbox.configure(state='disabled')
@@ -113,10 +106,10 @@ class ItemMenu:
             if self.item_id:    # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
                 login = get_all_from_logins(self.item_id)
-                self.item_name_textbox.insert('end', login[0][2])
-                self.username_textbox.insert('end', login[0][3])
+                self.login_name_entry.insert(0, login[0][2])
+                self.username_entry.insert(0, login[0][3])
                 self.password_textbox.insert('end', login[0][4])
-                self.website_textbox.insert('end', login[0][5])
+                self.website_entry.insert(0, login[0][5])
             else:    # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
 
@@ -161,10 +154,10 @@ class ItemMenu:
             self.destroy_main_frame()
 
     def get_all_login_fields(self):
-        login_name = self.item_name_textbox.get('0.0', 'end').strip()
-        username = self.username_textbox.get('0.0', 'end').strip()
+        login_name = self.login_name_entry.get().strip()
+        username = self.username_entry.get().strip()
         key = self.password_textbox.get('0.0', 'end').strip()
-        url = self.website_textbox.get('0.0', 'end').strip()
+        url = self.website_entry.get().strip()
         folder = self.folder_menu.get()
         return login_name, username, key, url, folder
 

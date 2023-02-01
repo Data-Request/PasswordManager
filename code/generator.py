@@ -58,28 +58,20 @@ class GeneratorTab:
         self.sequential_numbers = 0
         self.sequential_symbols = 0
 
-        # Create Password Textbox
+        # Initialize all frames
         self.main_textbox = customtkinter.CTkTextbox(master=self.landing_tabview.tab('Generator'), state='disabled',
                                                      width=self.main_textbox_width, font=('Arial', 16),
                                                      height=self.main_textbox_height, corner_radius=15)
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
-
-        # Create Add / Copy / Create
         self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.account_id)
+        self.create_generator_tabview()
+        # Password strength needs created before password_frame as it updates based on each password created
+        self.create_password_strength_frame()
+        self.create_password_frame()
+        self.create_passphrase_frame()
+        self.create_username_frame()
 
-        # Password Strength
-        self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
-                                                              fg_color="transparent")
-        self.strength_label = customtkinter.CTkLabel(master=self.password_strength_frame, text="Password Strength:")
-        self.strength_bar = customtkinter.CTkProgressBar(self.password_strength_frame, width=350, height=20)
-        # Password Strength Placement
-        self.password_strength_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
-        self.password_strength_frame.grid_columnconfigure(0, weight=1)
-        self.password_strength_frame.grid_rowconfigure(2, weight=1)
-        self.strength_label.grid(row=0, column=0, sticky="ew")
-        self.strength_bar.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-
-        # Create Password/UserName Tabview
+    def create_generator_tabview(self):
         self.password_tabview = customtkinter.CTkTabview(master=self.landing_tabview.tab('Generator'),
                                                          width=self.password_tabview_width,
                                                          height=self.password_tabview_height,
@@ -91,7 +83,7 @@ class GeneratorTab:
         self.password_tabview.add('Passphrase')
         self.password_tabview.add("Username")
 
-        """=======================       Password Section       ======================="""
+    def create_password_frame(self):
         # Create Length Slider and Ambiguous Checkbox Frame
         self.length_slider_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Password'),
                                                           fg_color='transparent')
@@ -128,8 +120,6 @@ class GeneratorTab:
         self.uppercase.grid(row=0, column=1, padx=(0, 40), pady=10, sticky="e")
         self.numbers.grid(row=1, column=0, padx=(40, 10), pady=10, sticky="w")
         self.special_characters.grid(row=1, column=1, padx=(0, 40), pady=10, sticky="e")
-        # Default
-        self.lowercase.select()
 
         # Create Extras Slider Frame
         self.extras_slider_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Password'),
@@ -153,6 +143,7 @@ class GeneratorTab:
         self.min_symbol_slider.grid(row=1, column=1, pady=(15, 0), sticky="e")
 
         # Set Defaults
+        self.lowercase.select()
         self.length_slider.set(self.password_length)
         self.create_password()
         self.length_label.configure(text=f'Length: {self.password_length}')
@@ -161,8 +152,7 @@ class GeneratorTab:
         self.min_symbol_slider.set(self.default_min_symbol)
         self.min_symbol_label.configure(text=f'Minimum Symbols: {self.default_min_symbol}')
 
-        """=======================       Passphrase Section       ======================="""
-
+    def create_passphrase_frame(self):
         # Create Passphrase Length Slider Frame
         self.passphrase_length_slider_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Passphrase'),
                                                                      fg_color='transparent')
@@ -182,14 +172,13 @@ class GeneratorTab:
         self.word_separator_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Passphrase'),
                                                            fg_color='transparent')
         self.word_separator_label = customtkinter.CTkLabel(master=self.word_separator_frame, text='Word Separator:')
-        self.word_separator_textbox = customtkinter.CTkTextbox(master=self.word_separator_frame,
-                                                               width=70, height=40, corner_radius=15)
+        self.word_separator_entry = customtkinter.CTkEntry(master=self.word_separator_frame, width=100,)
         # Word Separator Frame Placement
         self.word_separator_frame.grid(row=1, column=0, padx=(50, 0), pady=(30, 0), sticky="n")
         self.word_separator_frame.grid_columnconfigure(2, weight=1)
         self.word_separator_frame.grid_rowconfigure(1, weight=1)
         self.word_separator_label.grid(row=0, column=0, padx=(0, 20), sticky="w")
-        self.word_separator_textbox.grid(row=0, column=1, padx=(0, 20), sticky="e")
+        self.word_separator_entry.grid(row=0, column=1, padx=(0, 20), sticky="e")
 
         # Create Capitalize - Number Checkbox Frame
         self.capitalize_checkbox_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Passphrase'))
@@ -208,11 +197,10 @@ class GeneratorTab:
         # Set Defaults
         self.passphrase_length_label.configure(text=f'Words {self.min_words}')
         self.passphrase_length_slider.set(self.min_words)
-        self.word_separator_textbox.bind('<KeyPress>', self.reset_word_separator_box)
-        self.word_separator_textbox.insert('0.0', self.default_word_separator)
+        self.word_separator_entry.bind('<KeyRelease>', self.create_passphrase)
+        self.word_separator_entry.insert(0, self.default_word_separator)
 
-        """=======================       Username Section       ======================="""
-
+    def create_username_frame(self):
         # Create Username Checkbox Frame
         self.username_checkbox_frame = customtkinter.CTkFrame(master=self.password_tabview.tab('Username'))
         self.random_word_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame, text='Random word',
@@ -221,7 +209,7 @@ class GeneratorTab:
         self.sub_address_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame,
                                                               text='Email sub-address',
                                                               command=self.sub_address_clicked, width=150)
-        # Password Checkbox Frame Placement
+        # Username Checkbox Frame Placement
         self.username_checkbox_frame.grid(row=0, column=0, padx=(90, 0), pady=(40, 0), sticky='n')
         self.username_checkbox_frame.grid_columnconfigure(1, weight=1)
         self.username_checkbox_frame.grid_rowconfigure(2, weight=1)
@@ -231,14 +219,22 @@ class GeneratorTab:
         # Set Defaults
         self.random_word_checkbox.select()
 
+    def create_password_strength_frame(self):
+        self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
+                                                              fg_color="transparent")
+        self.strength_label = customtkinter.CTkLabel(master=self.password_strength_frame, text="Password Strength:")
+        self.strength_bar = customtkinter.CTkProgressBar(self.password_strength_frame, width=350, height=20)
+        # Password Strength Placement
+        self.password_strength_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
+        self.password_strength_frame.grid_columnconfigure(0, weight=1)
+        self.password_strength_frame.grid_rowconfigure(2, weight=1)
+        self.strength_label.grid(row=0, column=0, sticky="ew")
+        self.strength_bar.grid(row=1, column=0, pady=(0, 20), sticky="ew")
+
     def reset_password_box(self):
         self.main_textbox.configure(state='normal')
         self.main_textbox.delete('1.0', 'end')
         self.main_textbox.configure(state='disabled')
-
-    def reset_word_separator_box(self, *args):
-        # Only allows one character to be input into textbox
-        self.word_separator_textbox.delete('1.0', 'end')
 
     def check_valid_checkbox(self):
         if self.numbers.get() == 1:
@@ -332,10 +328,10 @@ class GeneratorTab:
         self.main_textbox.insert('end', text)
         self.main_textbox.configure(state='disabled')
 
-    def create_passphrase(self):
+    def create_passphrase(self, *args):
         current_passphrase = ''
         num_of_words = int(self.passphrase_length_slider.get())
-        current_seperator = self.word_separator_textbox.get('0.0', 'end').strip()
+        current_seperator = self.word_separator_entry.get().strip()
 
         for i in range(0, num_of_words):
             random_index = secrets.randbelow(58110)

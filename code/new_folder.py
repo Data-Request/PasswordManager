@@ -2,8 +2,6 @@ import customtkinter
 from colors import *
 from sql import get_folder_list, update_folder_list
 
-# todo add warning label so we can tell them the file name is blank.
-
 
 class NewFolder:
     def __init__(self, parent, parent_frame, account_id):
@@ -13,34 +11,34 @@ class NewFolder:
         self.parent = parent
         self.parent_frame = parent_frame
         self.account_id = account_id
-        self.button_width = 25
-        self.button_height = 25
-        self.textbox_width = 300
-        self.textbox_height = 10
-        self.note_textbox_width = 300
-        self.note_textbox_height = 250
+        self.entry_width = 300
 
         # Initialize
+        self.create_warning_label_frame()
         self.create_new_folder_frame()
 
+    def create_warning_label_frame(self):
+        self.warning_label_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
+        self.warning_label = customtkinter.CTkLabel(master=self.warning_label_frame, text_color=RED, text='')
+        self.warning_label_frame.grid(row=3, column=0, sticky="n")
+        self.warning_label_frame.grid_columnconfigure(1, weight=1)
+        self.warning_label_frame.grid_rowconfigure(1, weight=1)
+        self.warning_label.grid(row=0, column=0, pady=(0, 0), sticky="n")
+
     def create_new_folder_frame(self):
-        # Create Secure Note Frame
         self.new_folder_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.name_label = customtkinter.CTkLabel(master=self.new_folder_frame, text="Name:")
-        self.name_textbox = customtkinter.CTkTextbox(master=self.new_folder_frame,
-                                                          width=self.textbox_width, font=('Arial', 16),
-                                                          height=self.textbox_height, corner_radius=15)
+        self.name_textbox = customtkinter.CTkEntry(master=self.new_folder_frame, width=self.entry_width)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.new_folder_frame, text_color=BLACK,
                                                                    width=300, unselected_color=GREEN,
                                                                    unselected_hover_color=DARK_GREEN,
+                                                                   values=['Cancel', 'Save'],
                                                                    command=self.cancel_save_delete_event)
-        # Secure Note Frame Placement
-        self.new_folder_frame.grid(row=3, column=0, sticky="n")
+        self.new_folder_frame.grid(row=4, column=0, sticky="n")
         self.new_folder_frame.grid_columnconfigure(1, weight=1)
         self.new_folder_frame.grid_rowconfigure(3, weight=1)
-        self.name_label.grid(row=0, column=0, pady=(15, 5), sticky="w")
+        self.name_label.grid(row=0, column=0, pady=(0, 5), sticky="w")
         self.name_textbox.grid(row=1, column=0, pady=(0, 20), sticky="w")
-        self.cancel_save_button.configure(values=['Cancel', 'Save'])
         self.cancel_save_button.grid(row=2, column=0, sticky="n")
 
     def destroy_new_folder_frame(self):
@@ -50,21 +48,32 @@ class NewFolder:
     def cancel_save_delete_event(self, *args):
         # Handles the segmented button event, they always send a value with command
         if args[0] == 'Save':
-            self.save_note()
+            self.save_folder()
+        else:
+            self.parent.main_frame.destroy()
 
-        self.parent.main_frame.destroy()
+    def check_for_valid_entry(self, new_folder, folder_list):
+        if new_folder == '':
+            self.warning_label.configure(text='Folder name is blank.')
+            # Updates the save/cancel button by refreshing the frame
+            self.new_folder_frame.destroy()
+            self.create_new_folder_frame()
+            return False
+        elif new_folder in folder_list:
+            self.warning_label.configure(text='Folder already exists.')
+            # Updates the save/cancel button by refreshing the frame
+            self.new_folder_frame.destroy()
+            self.create_new_folder_frame()
+            return False
+        else:
+            return True
 
-    def save_note(self):
-        new_folder = self.name_textbox.get('0.0', 'end').strip()
+    def save_folder(self):
+        new_folder = self.name_textbox.get().strip()
         folder_list = get_folder_list(self.account_id)
         folder_string = ''
 
-        if new_folder == '':
-            print('empty folder name')
-            return
-        if new_folder in folder_list:
-            print('Already a folder')
-        else:
+        if self.check_for_valid_entry(new_folder, folder_list):
             folder_list.append(new_folder)
             folder_list.sort()
             for index, word in enumerate(folder_list):
@@ -72,10 +81,10 @@ class NewFolder:
                     folder_string += f'{word}'
                 else:
                     folder_string += f',{word}'
-
             update_folder_list(folder_string, self.account_id)
-            self.destroy_new_folder_frame()
+            self.new_folder_frame.destroy()
             self.create_new_folder_frame()
+            self.parent.main_frame.destroy()
 
 
 

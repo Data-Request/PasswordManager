@@ -27,13 +27,11 @@ class SecureNote:
         self.secure_note_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.title_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="")
         self.name_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Name:")
-        self.name_textbox = customtkinter.CTkTextbox(master=self.secure_note_frame,
-                                                     width=self.textbox_width, font=('Arial', 16),
-                                                     height=self.textbox_height, corner_radius=15)
+        self.name_entry = customtkinter.CTkEntry(master=self.secure_note_frame, width=self.textbox_width)
         self.note_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Secure Note:")
         self.note_textbox = customtkinter.CTkTextbox(master=self.secure_note_frame,
-                                                     width=self.textbox_width, font=('Arial', 16),
-                                                     height=self.note_textbox_height, corner_radius=15)
+                                                     width=self.textbox_width, font=('Arial', 14),
+                                                     height=self.note_textbox_height)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.secure_note_frame, text_color=BLACK,
                                                                    width=300, unselected_color=GREEN,
                                                                    unselected_hover_color=DARK_GREEN,
@@ -42,7 +40,7 @@ class SecureNote:
         self.secure_note_frame.grid(row=3, column=0, sticky="n")
         self.secure_note_frame.grid_columnconfigure(1, weight=1)
         self.secure_note_frame.grid_rowconfigure(6, weight=1)
-        self.name_textbox.grid(row=2, column=0, pady=(0, 20), sticky="n")
+        self.name_entry.grid(row=2, column=0, pady=(0, 20), sticky="n")
         self.note_textbox.grid(row=4, column=0, pady=(0, 25), sticky="n")
 
         if self.note_id:    # Editing a note, so we need to reshape the frame to fill the screen
@@ -56,7 +54,7 @@ class SecureNote:
             self.cancel_save_button.grid(row=5, column=0, pady=(0, 30), sticky="n")
             # Get and display note from db
             note = get_single_secure_note(self.note_id)
-            self.name_textbox.insert('end', note[0][2])
+            self.name_entry.insert(0, note[0][2])
             self.note_textbox.insert('end', note[0][3])
         else:      # We are adding an item so we set default placements
             self.name_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
@@ -87,12 +85,12 @@ class SecureNote:
             self.crate_delete_note_frame()
 
     def save_note(self):
-        note_name = self.name_textbox.get('0.0', 'end').strip()
+        note_name = self.name_entry.get().strip()
         note = self.note_textbox.get('0.0', 'end').strip()
         create_new_secure_note(self.account_id, note_name, note)
 
     def edit_note(self):
-        note_name = self.name_textbox.get('0.0', 'end').strip()
+        note_name = self.name_entry.get().strip()
         note = self.note_textbox.get('0.0', 'end').strip()
         update_secure_note(note_name, note, self.note_id)
 
