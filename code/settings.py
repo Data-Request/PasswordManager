@@ -2,7 +2,7 @@ import tkinter
 import customtkinter
 
 MAX_HISTORY_ENTRIES = 10
-
+TEXTBOX_FONT = ('Prototype', 15)
 
 class SettingsTab:
     def __init__(self, landing_tabview, account_id):

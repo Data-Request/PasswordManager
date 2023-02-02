@@ -6,7 +6,6 @@ from landing_page import LandingPage
 # todo add email verification via email for master password resets
 # todo add remember username feature, add settings to remove it
 # todo sign out button
-# todo add back button to account creation
 
 customtkinter.set_appearance_mode("System")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green

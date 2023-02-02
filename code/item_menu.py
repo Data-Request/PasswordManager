@@ -97,7 +97,7 @@ class ItemMenu:
         # Set Defaults
         if self.parent.name == 'Generator':     # Coming from generator tab - password, or passphrase
             self.main_label.configure(text='Add Login')
-            if self.parent.password_tabview.get() == 'Username':    # Coming from generator tab, username
+            if self.parent.generator_tabview.get() == 'Username':    # Coming from generator tab, username
                 if self.parent.random_word_checkbox.get() == 1:
                     self.username_entry.insert(0, self.parent.main_textbox.get('0.0', 'end').strip())
                     self.username_entry.configure(state='disabled')

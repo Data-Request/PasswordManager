@@ -1,5 +1,6 @@
 import tkinter
 import customtkinter
+import string
 from colors import *
 from PIL import Image
 from right_button_sidebar import RightButtonSidebar
@@ -7,6 +8,7 @@ import functools
 from item_menu import ItemMenu
 from sql import *
 from secure_note import SecureNote
+from settings import TEXTBOX_FONT
 
 
 class VaultTab:
@@ -42,7 +44,7 @@ class VaultTab:
 
         # Create Password Textbox
         self.main_textbox = customtkinter.CTkTextbox(master=self.landing_tabview.tab('Vault'), state='disabled',
-                                                     width=self.main_textbox_width, font=('Arial', 16),
+                                                     width=self.main_textbox_width, font=TEXTBOX_FONT,
                                                      height=self.main_textbox_height, corner_radius=15)
         self.main_textbox.place(relx=0.45, rely=0.01, anchor=tkinter.N)
 
@@ -120,11 +122,11 @@ class VaultTab:
                                                        text_color=BLACK, anchor='w', width=270,
                                                        command=functools.partial(self.edit_item, folder_row[index][0]))
             password_button = customtkinter.CTkButton(master=item_row, text='', image=self.key_image, compound='left',
-                                    bg_color='transparent',  text_color=BLACK, anchor='w', width=25,
-                                                      command=functools.partial(self.update_text_box, (folder_row[index][4]), folder_row[index][5]))
+                                                      bg_color='transparent', text_color=BLACK, anchor='w', width=25,
+                                                      command=functools.partial(self.update_main_textbox, (folder_row[index][4]), folder_row[index][5]))
             user_button = customtkinter.CTkButton(master=item_row, text='', image=self.user_image, compound='left',
-                                    bg_color='transparent',  text_color=BLACK, anchor='w', width=25,
-                                                      command=functools.partial(self.update_text_box, (folder_row[index][3]), folder_row[index][5]))
+                                                  bg_color='transparent', text_color=BLACK, anchor='w', width=25,
+                                                  command=functools.partial(self.update_main_textbox, (folder_row[index][3]), folder_row[index][5]))
             item_name_button.pack(side='left', pady=(10, 0))
             password_button.pack(side='right', pady=(10, 0))
             user_button.pack(side='right', pady=(10, 0))
@@ -133,11 +135,20 @@ class VaultTab:
     def edit_item(self, item_id):
         ItemMenu(self.landing_tabview, self, self.account_id, item_id)
 
-    def update_text_box(self, text, website):
+    def update_main_textbox(self, text, website):
         self.website = website
         self.main_textbox.configure(state='normal')
         self.main_textbox.delete('1.0', 'end')
-        self.main_textbox.insert('end', text)
+        self.main_textbox.tag_config('letter', foreground=WHITE)
+        self.main_textbox.tag_config('digit', foreground=GREEN)
+        self.main_textbox.tag_config('symbol', foreground=BLUE)
+        for char in text:
+            if char in string.ascii_letters:
+                self.main_textbox.insert('end', char, 'letter')
+            elif char in string.digits:
+                self.main_textbox.insert('end', char, 'digit')
+            else:
+                self.main_textbox.insert('end', char, 'symbol')
         self.main_textbox.configure(state='disabled')
 
     def create_secure_notes_frame(self):

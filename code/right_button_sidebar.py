@@ -33,7 +33,7 @@ class RightButtonSidebar:
                                                             fg_color="transparent")
             self.create_or_launch_button = customtkinter.CTkButton(master=self.copy_button_frame, text='',
                                                                    image=self.create_image, fg_color=GREEN,
-                                                                   command=self.parent.update_main_textbox,
+                                                                   command=self.parent.generator_tabview_event,
                                                                    width=self.button_width, height=self.button_height)
 
         else:
