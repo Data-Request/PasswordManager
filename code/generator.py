@@ -9,7 +9,6 @@ from support import create_username
 
 # todo password strength fix
 # todo password generate per requirements - min numbers and min specials
-# todo look into generating passphrase on word separator input
 
 
 class GeneratorTab:

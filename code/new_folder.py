@@ -28,7 +28,7 @@ class NewFolder:
     def create_new_folder_frame(self):
         self.new_folder_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.name_label = customtkinter.CTkLabel(master=self.new_folder_frame, text="Name:")
-        self.name_textbox = customtkinter.CTkEntry(master=self.new_folder_frame, width=self.entry_width)
+        self.name_entry = customtkinter.CTkEntry(master=self.new_folder_frame, width=self.entry_width)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.new_folder_frame, text_color=BLACK,
                                                                    width=300, unselected_color=GREEN,
                                                                    unselected_hover_color=DARK_GREEN,
@@ -38,7 +38,7 @@ class NewFolder:
         self.new_folder_frame.grid_columnconfigure(1, weight=1)
         self.new_folder_frame.grid_rowconfigure(3, weight=1)
         self.name_label.grid(row=0, column=0, pady=(0, 5), sticky="w")
-        self.name_textbox.grid(row=1, column=0, pady=(0, 20), sticky="w")
+        self.name_entry.grid(row=1, column=0, pady=(0, 20), sticky="w")
         self.cancel_save_button.grid(row=2, column=0, sticky="n")
 
     def destroy_new_folder_frame(self):
@@ -52,29 +52,30 @@ class NewFolder:
         else:
             self.parent.main_frame.destroy()
 
-    def check_for_valid_entry(self, new_folder, folder_list):
-        if new_folder == '':
+    def check_for_valid_entry(self, new_folder_name, folder_list):
+        if new_folder_name == '':
             self.warning_label.configure(text='Folder name is blank.')
             # Updates the save/cancel button by refreshing the frame
             self.new_folder_frame.destroy()
             self.create_new_folder_frame()
             return False
-        elif new_folder in folder_list:
+        elif new_folder_name in folder_list:
             self.warning_label.configure(text='Folder already exists.')
             # Updates the save/cancel button by refreshing the frame
             self.new_folder_frame.destroy()
             self.create_new_folder_frame()
+            self.name_entry.insert(0, new_folder_name)
             return False
         else:
             return True
 
     def save_folder(self):
-        new_folder = self.name_textbox.get().strip()
+        new_folder_name = self.name_entry.get().strip()
         folder_list = get_folder_list(self.account_id)
         folder_string = ''
 
-        if self.check_for_valid_entry(new_folder, folder_list):
-            folder_list.append(new_folder)
+        if self.check_for_valid_entry(new_folder_name, folder_list):
+            folder_list.append(new_folder_name)
             folder_list.sort()
             for index, word in enumerate(folder_list):
                 if index == 0:

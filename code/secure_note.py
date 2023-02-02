@@ -3,6 +3,7 @@ import customtkinter
 from colors import *
 from sql import get_single_secure_note, create_new_secure_note, update_secure_note, delete_secure_note
 
+# todo add warning label for empty field
 # todo refresh when a new note is created
 
 
@@ -27,7 +28,8 @@ class SecureNote:
         self.secure_note_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.title_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="")
         self.name_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Name:")
-        self.name_entry = customtkinter.CTkEntry(master=self.secure_note_frame, width=self.textbox_width)
+        self.name_entry = customtkinter.CTkEntry(master=self.secure_note_frame, width=self.textbox_width,
+                                                 placeholder_text='Name')
         self.note_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Secure Note:")
         self.note_textbox = customtkinter.CTkTextbox(master=self.secure_note_frame,
                                                      width=self.textbox_width, font=('Arial', 14),

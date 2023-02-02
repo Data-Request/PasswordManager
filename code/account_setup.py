@@ -13,24 +13,29 @@ class AccountSetup:
 
         self.parent = parent
         self.create_new_account_frame()
+        self.create_warning_label()
 
     def create_new_account_frame(self):
         self.new_account_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.new_username_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Username:", anchor="w")
-        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username", width=300)
+        self.new_username = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Username",
+                                                   width=300)
         self.new_email_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Email:", anchor="w")
         self.new_email = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email")
-        self.new_master_password_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Master Password:", anchor="w")
+        self.new_master_password_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Master Password:",
+                                                                anchor="w")
         self.new_master_password = customtkinter.CTkEntry(master=self.new_account_frame,
                                                           placeholder_text="Master Password")
-        self.new_master_password_verify_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Retype Master Password:", anchor="w")
+        self.new_master_password_verify_label = customtkinter.CTkLabel(master=self.new_account_frame,
+                                                                       text="Retype Master Password:", anchor="w")
         self.new_master_password_verify = customtkinter.CTkEntry(master=self.new_account_frame,
                                                                  placeholder_text="Renter Master Password")
         self.back_forward_button = customtkinter.CTkSegmentedButton(master=self.new_account_frame, width=300,
                                                                     text_color=BLACK, values=["Back", "Create"],
-                                                                    unselected_color=GREEN, unselected_hover_color=DARK_GREEN,
-                                                                    command=self.back_forward_button)
+                                                                    unselected_color=GREEN,
+                                                                    unselected_hover_color=DARK_GREEN,
+                                                                    command=self.back_forward_button_event)
         # New Account Placement
         self.new_account_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
         self.new_account_frame.grid_columnconfigure(1, weight=1)
@@ -44,14 +49,14 @@ class AccountSetup:
         self.new_master_password_verify_label.grid(row=6, column=0, sticky="ew")
         self.new_master_password_verify.grid(row=7, column=0, pady=(0, 20), sticky="ew")
         self.back_forward_button.grid(row=8, column=0, pady=(42, 20), sticky="ew")
-        # Create and Place Warning Label
+
+    def create_warning_label(self):
         self.warning_label = customtkinter.CTkLabel(master=self.parent.landing_page_tabview.tab('Vault'),
                                                     text='', text_color=RED)
         self.warning_label.place(relx=0.5, rely=0.01, anchor=tkinter.N)
 
-    def back_forward_button(self, *args):
+    def back_forward_button_event(self, *args):
         if args[0] == 'Create':
-            print(args[0])
             self.create_new_account()
         else:
             self.new_account_frame.destroy()
@@ -66,58 +71,55 @@ class AccountSetup:
         master_password = self.new_master_password.get().strip()
         master_password_verify = self.new_master_password_verify.get().strip()
 
-        # Reset in case method is called twice in a row for different reasons
-        self.reset_new_account_text_color()
-
-        if self.check_for_blank_field(username, email, master_password, master_password_verify):
-            return
-        if not validate_email(email):
-            self.new_email.configure(text_color=RED)
-            self.warning_label.configure(text='Not a valid email.')
-            return
-        if master_password != master_password_verify:
-            self.new_master_password.configure(text_color=RED)
-            self.new_master_password_verify.configure(text_color=RED)
-            self.warning_label.configure(text='Passwords do not match.')
+        if self.check_for_invalid_entries(username, email, master_password, master_password_verify):
             return
 
         username_row = get_username_with_username(username)
         email_row = get_email_with_email(email)
 
-        if username_row is None:
-            if email_row is None:
-                salt = os.urandom(32)
-                key = generate_key(salt, master_password)
-                create_new_user_account(username, email, salt, key)
-                self.new_account_frame.destroy()
-                self.warning_label.destroy()
-                self.parent.create_log_in_widgets()
-            else:
-                self.new_email.configure(text_color=RED)
-                self.warning_label.configure(text='Email already in use.')
-        else:
-            self.new_username.configure(text_color=RED)
+        if username_row is not None:
+            self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
             self.warning_label.configure(text='Username taken.')
+            return
+        elif email_row is not None:
+            self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
+            self.warning_label.configure(text='Email already in use.')
+        else:
+            salt = os.urandom(32)
+            key = generate_key(salt, master_password)
+            create_new_user_account(username, email, salt, key)
+            self.new_account_frame.destroy()
+            self.warning_label.destroy()
+            self.parent.create_log_in_widgets()
 
-    def reset_new_account_text_color(self):
-        self.new_username.configure(text_color=WHITE)
-        self.new_email.configure(text_color=WHITE)
-        self.new_master_password.configure(text_color=WHITE)
-        self.new_master_password_verify.configure(text_color=WHITE)
-
-    def check_for_blank_field(self, username, email, master_password, master_password_verify):
+    def check_for_invalid_entries(self, username, email, master_password, master_password_verify):
+        invalid_entries = False
         if username == '':
             self.warning_label.configure(text='Username is blank.')
-            return True
+            invalid_entries = True
         elif email == '':
             self.warning_label.configure(text='Email is blank.')
-            return True
+            invalid_entries = True
         elif master_password == '':
             self.warning_label.configure(text='Password is blank.')
-            return True
+            invalid_entries = True
         elif master_password_verify == '':
             self.warning_label.configure(text='Please verify password.')
-            return True
-        else:
-            return False
+            invalid_entries = True
+        elif not validate_email(email):
+            self.warning_label.configure(text='Not a valid email.')
+            invalid_entries = True
+        elif master_password != master_password_verify:
+            self.warning_label.configure(text='Passwords do not match.')
+            invalid_entries = True
+        if invalid_entries:
+            self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
+        return invalid_entries
 
+    def refresh_and_insert_fields(self, username, email, master_password, master_password_verify):
+        self.new_account_frame.destroy()
+        self.create_new_account_frame()
+        self.new_username.insert(0, username)
+        self.new_email.insert(0, email)
+        self.new_master_password.insert(0, master_password)
+        self.new_master_password_verify.insert(0, master_password_verify)

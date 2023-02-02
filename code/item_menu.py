@@ -7,7 +7,7 @@ from secure_note import SecureNote
 from new_folder import NewFolder
 
 # todo refresh folders, and secure notes when new one is added
-# todo update save/cancel button by refreshing the frame otherwise it has outdate infomation
+# todo update save/cancel button by refreshing the frame otherwise it has outdated information
 
 
 class ItemMenu:
@@ -20,7 +20,7 @@ class ItemMenu:
         self.landing_tabview = landing_tabview
         self.parent = parent
         self.textbox_width = 300
-        self.textbox_height = 10
+        self.textbox_height = 150
 
         # Images
         self.close_image = customtkinter.CTkImage(
@@ -37,6 +37,7 @@ class ItemMenu:
                 self.create_basic_option_frame()
         else:
             self.create_basic_option_frame()
+        self.create_warning_label()
 
     def create_main_frame(self):
         # Create Main Frame
@@ -60,16 +61,18 @@ class ItemMenu:
         self.folder_label = customtkinter.CTkLabel(master=self.options_frame, text="Folder:")
         self.folder_menu = customtkinter.CTkOptionMenu(master=self.options_frame, values=folder_list, width=300)
         self.login_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
-        self.login_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
+        self.login_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
+                                                       placeholder_text='Website Name')
+        self.website_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
+        self.website_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
+                                                    placeholder_text='URL')
         self.username_label = customtkinter.CTkLabel(master=self.options_frame, text="Username:")
-        self.username_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
+        self.username_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
+                                                     placeholder_text='Username')
         self.password_label = customtkinter.CTkLabel(master=self.options_frame, text="Password:")
         self.password_textbox = customtkinter.CTkTextbox(master=self.options_frame, state='normal',
                                                          width=self.textbox_width, font=('Arial', 16),
-                                                         height=self.textbox_height, corner_radius=15)
-        self.website_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
-        self.website_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width)
-        self.warning_label = customtkinter.CTkLabel(master=self.options_frame, text='', text_color=RED)
+                                                         height=self.textbox_height, corner_radius=5)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.options_frame, width=300,
                                                                    text_color=BLACK, values=["Cancel", "Save"],
                                                                    unselected_color=GREEN,
@@ -83,14 +86,13 @@ class ItemMenu:
         self.folder_menu.grid(row=2, column=0, pady=(0, 20), sticky="w")
         self.login_name_label.grid(row=3, column=0, sticky="w")
         self.login_name_entry.grid(row=4, column=0, pady=(0, 10), sticky="n")
-        self.username_label.grid(row=5, column=0, sticky="w")
-        self.username_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
-        self.password_label.grid(row=7, column=0, sticky="w")
-        self.password_textbox.grid(row=8, column=0, pady=(0, 10), sticky="n")
-        self.website_label.grid(row=9, column=0, sticky="w")
-        self.website_entry.grid(row=10, column=0, pady=(0, 10), sticky="n")
-        self.warning_label.grid(row=11, column=0, pady=(0, 5), sticky="n")
-        self.cancel_save_button.grid(row=12, column=0, pady=(20, 0), sticky="n")
+        self.website_label.grid(row=5, column=0, sticky="w")
+        self.website_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
+        self.username_label.grid(row=7, column=0, sticky="w")
+        self.username_entry.grid(row=8, column=0, pady=(0, 10), sticky="n")
+        self.password_label.grid(row=9, column=0, sticky="w")
+        self.password_textbox.grid(row=10, column=0, pady=(0, 10), sticky="n")
+        self.cancel_save_button.grid(row=11, column=0, pady=(30, 0), sticky="n")
 
         # Set Defaults
         if self.parent.name == 'Generator':     # Coming from generator tab - password, or passphrase
@@ -112,6 +114,10 @@ class ItemMenu:
                 self.website_entry.insert(0, login[0][5])
             else:    # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
+
+    def create_warning_label(self):
+        self.warning_label = customtkinter.CTkLabel(master=self.options_frame, text='', text_color=RED)
+        self.warning_label.place(relx=0.5, rely=0.1, anchor=tkinter.S)
 
     def create_vault_option_frame(self):
         self.options_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color="transparent")
@@ -173,11 +179,11 @@ class ItemMenu:
         if login_name == '':
             self.warning_label.configure(text='Website Name is blank.')
             return
-        elif username == '':
-            self.warning_label.configure(text='Username is blank.')
-            return
         elif url == '':
             self.warning_label.configure(text='URL is blank.')
+            return
+        elif username == '':
+            self.warning_label.configure(text='Username is blank.')
             return
 
         create_new_login(self.account_id, login_name, username, key, url, folder)
