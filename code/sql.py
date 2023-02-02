@@ -159,7 +159,6 @@ def get_all_from_history(account_id):
     with sqlite3.connect('data.db') as db:
         cursor = db.execute('SELECT * FROM History WHERE account_id = ?', [account_id])
         history = cursor.fetchall()
-        history.reverse()  # We want the history tab sorted from newest to oldest
     return history
 
 
