@@ -40,7 +40,6 @@ class ItemMenu:
         self.create_warning_label()
 
     def create_main_frame(self):
-        # Create Main Frame
         if self.parent.name == 'Generator':
             self.main_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
                                                      fg_color="transparent", height=600, width=403,
@@ -49,7 +48,6 @@ class ItemMenu:
             self.main_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent",
                                                      height=600, width=403, border_width=3, border_color=WHITE,
                                                      corner_radius=15)
-        # History Textbox Frame Placement
         self.main_frame.place(relx=0.5, rely=0.01, anchor=tkinter.N)
         self.main_frame.grid_columnconfigure(1, weight=1)
         self.main_frame.grid_rowconfigure(10, weight=1)

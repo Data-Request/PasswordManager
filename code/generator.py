@@ -7,8 +7,8 @@ from right_button_sidebar import RightButtonSidebar
 from sql import *
 from support import create_username
 from settings import TEXTBOX_FONT
+from password_strength import PasswordStrength
 
-# todo password strength fix
 # todo password generate per requirements - min numbers and min specials
 
 
@@ -44,20 +44,6 @@ class GeneratorTab:
         self.max_words = 20
         self.default_word_separator = '-'
 
-        # Password Strength
-        self.num_of_uppercase_chars = 0
-        self.num_of_lowercase_chars = 0
-        self.num_of_num_chars = 0
-        self.num_of_symbol_chars = 0
-        self.num_or_symbol_used_in_middle = 0
-        self.repeat_char = 0
-        self.consecutive_uppercase = 0
-        self.consecutive_lowercase = 0
-        self.consecutive_numbers = 0
-        self.sequential_letters = 0
-        self.sequential_numbers = 0
-        self.sequential_symbols = 0
-
         # Initialize all frames
         self.main_textbox = customtkinter.CTkTextbox(master=self.landing_tabview.tab('Generator'), state='disabled',
                                                      width=self.main_textbox_width, font=TEXTBOX_FONT,
@@ -66,7 +52,7 @@ class GeneratorTab:
         self.right_side_button_bar = RightButtonSidebar(self.landing_tabview, self, self.account_id)
         self.create_generator_tabview()
         # Password strength needs created before password_frame as it updates based on each password created
-        self.create_password_strength_frame()
+        self.password_strength_frame = PasswordStrength(self.landing_tabview, self)
         self.create_password_frame()
         self.create_passphrase_frame()
         self.create_username_frame()
@@ -106,20 +92,20 @@ class GeneratorTab:
 
         # Create Password Checkbox Frame
         self.checkbox_slider_frame = customtkinter.CTkFrame(master=self.generator_tabview.tab('Password'))
-        self.lowercase = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='a-z',
-                                                   command=self.check_valid_checkbox)
-        self.uppercase = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='A-Z',
-                                                   command=self.check_valid_checkbox)
-        self.numbers = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='0-9',
-                                                 command=self.check_valid_checkbox)
-        self.special_characters = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='!@#$%^&*',
+        self.lowercase_checkbox = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='a-z',
                                                             command=self.check_valid_checkbox)
+        self.uppercase_checkbox = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='A-Z',
+                                                            command=self.check_valid_checkbox)
+        self.numbers_checkbox = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='0-9',
+                                                          command=self.check_valid_checkbox)
+        self.symbols_checkbox = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text='!@#$%^&*',
+                                                          command=self.check_valid_checkbox)
         # Password Checkbox Frame Placement
         self.checkbox_slider_frame.grid(row=1, column=0, padx=(50, 0), pady=(20, 0), sticky='n')
-        self.lowercase.grid(row=0, column=0, padx=(40, 0), pady=10, sticky="w")
-        self.uppercase.grid(row=0, column=1, padx=(0, 40), pady=10, sticky="e")
-        self.numbers.grid(row=1, column=0, padx=(40, 10), pady=10, sticky="w")
-        self.special_characters.grid(row=1, column=1, padx=(0, 40), pady=10, sticky="e")
+        self.lowercase_checkbox.grid(row=0, column=0, padx=(40, 0), pady=10, sticky="w")
+        self.uppercase_checkbox.grid(row=0, column=1, padx=(0, 40), pady=10, sticky="e")
+        self.numbers_checkbox.grid(row=1, column=0, padx=(40, 10), pady=10, sticky="w")
+        self.symbols_checkbox.grid(row=1, column=1, padx=(0, 40), pady=10, sticky="e")
 
         # Create Extras Slider Frame
         self.extras_slider_frame = customtkinter.CTkFrame(master=self.generator_tabview.tab('Password'),
@@ -143,7 +129,7 @@ class GeneratorTab:
         self.min_symbol_slider.grid(row=1, column=1, pady=(15, 0), sticky="e")
 
         # Set Defaults
-        self.lowercase.select()
+        self.lowercase_checkbox.select()
         self.length_slider.set(self.password_length)
         self.create_password()
         self.length_label.configure(text=f'Length: {self.password_length}')
@@ -219,30 +205,18 @@ class GeneratorTab:
         # Set Defaults
         self.random_word_checkbox.select()
 
-    def create_password_strength_frame(self):
-        self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
-                                                              fg_color="transparent")
-        self.strength_label = customtkinter.CTkLabel(master=self.password_strength_frame, text="Password Strength:")
-        self.strength_bar = customtkinter.CTkProgressBar(self.password_strength_frame, width=350, height=20)
-        # Password Strength Placement
-        self.password_strength_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
-        self.password_strength_frame.grid_columnconfigure(0, weight=1)
-        self.password_strength_frame.grid_rowconfigure(2, weight=1)
-        self.strength_label.grid(row=0, column=0, sticky="ew")
-        self.strength_bar.grid(row=1, column=0, pady=(0, 20), sticky="ew")
-
     def check_valid_checkbox(self):
-        if self.numbers.get() == 1:
+        if self.numbers_checkbox.get() == 1:
             self.min_numbers_slider.configure(state='normal')
         else:
             self.min_numbers_slider.configure(state='disabled')
-        if self.special_characters.get() == 1:
+        if self.symbols_checkbox.get() == 1:
             self.min_symbol_slider.configure(state='normal')
         else:
             self.min_symbol_slider.configure(state='disabled')
 
-        if self.uppercase.get() == 0 and self.lowercase.get() == 0 and self.numbers.get() == 0 and self.special_characters.get() == 0:
-            self.lowercase.select()
+        if self.uppercase_checkbox.get() == 0 and self.lowercase_checkbox.get() == 0 and self.numbers_checkbox.get() == 0 and self.symbols_checkbox.get() == 0:
+            self.lowercase_checkbox.select()
 
         self.create_password()
 
@@ -374,65 +348,17 @@ class GeneratorTab:
 
     def create_required_char_list(self):
         char_list = ''
-        if self.uppercase.get() == 1:
+        if self.uppercase_checkbox.get() == 1:
             char_list += string.ascii_uppercase
-        if self.lowercase.get() == 1:
+        if self.lowercase_checkbox.get() == 1:
             char_list += string.ascii_lowercase
-        if self.numbers.get() == 1:
+        if self.numbers_checkbox.get() == 1:
             char_list += string.digits
-        if self.special_characters.get() == 1:
+        if self.symbols_checkbox.get() == 1:
             char_list += self.valid_symbols
         if self.ambiguous_checkbox.get() == 1:
             char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O', '').replace( '0', '')
         return char_list
-
-    def reset_scoring_variables(self):
-        self.num_of_uppercase_chars = 0
-        self.num_of_lowercase_chars = 0
-        self.num_of_num_chars = 0
-        self.num_of_symbol_chars = 0
-        self.num_or_symbol_used_in_middle = 0
-        self.consecutive_uppercase = 0
-        self.consecutive_lowercase = 0
-        self.consecutive_numbers = 0
-        self.repeat_char = 0
-        self.sequential_letters = 0
-        self.sequential_numbers = 0
-        self.sequential_symbols = 0
-
-    def update_basic_scoring_variables(self, index, char):
-        if char in string.ascii_lowercase:
-            self.num_of_lowercase_chars += 1
-        elif char in string.ascii_uppercase:
-            self.num_of_uppercase_chars += 1
-        elif char in string.digits:
-            self.num_of_num_chars += 1
-        elif char in self.valid_symbols:
-            self.num_of_symbol_chars += 1
-
-        if index != 0 or index != self.password_length - 1:
-            if char in string.digits or char in self.valid_symbols:
-                self.num_or_symbol_used_in_middle += 1
-
-    def update_advanced_scoring_variables(self, password):
-        for char in range(len(password)):
-            if char < len(password) - 1:
-                if password[char] in string.ascii_uppercase:
-                    if password[char + 1] in string.ascii_uppercase:
-                        self.consecutive_uppercase += 1
-                elif password[char] in string.ascii_lowercase:
-                    if password[char + 1] in string.ascii_lowercase:
-                        self.consecutive_lowercase += 1
-                elif password[char] in string.digits:
-                    if password[char + 1] in string.digits:
-                        self.consecutive_numbers += 1
-
-            # todo figure out sequential numbers/letters
-
-            # Looks for repeated chars
-            for char_b in range(len(password)):
-                if password[char] == password[char_b] and char != char_b:
-                    self.repeat_char += 1
 
     def create_password(self):
         self.password_length = int(self.length_slider.get())
@@ -440,14 +366,14 @@ class GeneratorTab:
         password = ''
         min_num = self.min_numbers_slider.get()
         min_special = self.min_symbol_slider.get()
-        self.reset_scoring_variables()
+        self.password_strength_frame.reset_scoring_variables()
         for index in range(0, self.password_length):
             char = secrets.choice(char_list)
             password += char
-            self.update_basic_scoring_variables(index, char)
-        self.update_advanced_scoring_variables(password)
+            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols, self.password_length)
+        self.password_strength_frame.update_advanced_scoring_variables(self.valid_symbols, password)
         self.update_main_textbox(password)
-        self.calc_password_strength_score()
+        self.password_strength_frame.calc_password_strength_score(self.password_length)
 
     def update_history(self):
         key = self.main_textbox.get('0.0', 'end').strip()
@@ -466,68 +392,3 @@ class GeneratorTab:
             if item_row[1] == key:
                 return True
         return False
-
-    def calc_password_strength_score(self):
-        # Positive Scores
-        requirements_meet = 0
-        score = (self.password_length * 4)
-        if self.uppercase.get() == 1:
-            requirements_meet += 1
-            score += ((self.password_length - self.num_of_uppercase_chars) * 2)
-        if self.lowercase.get() == 1:
-            requirements_meet += 1
-            score += ((self.password_length - self.num_of_lowercase_chars) * 2)
-        if self.numbers.get() == 1:
-            requirements_meet += 1
-            score += (self.num_of_num_chars * 4)
-        if self.special_characters.get() == 1:
-            requirements_meet += 1
-            score += (self.num_of_symbol_chars * 6)
-        if self.password_length > 12:
-            requirements_meet += 1
-        score += (requirements_meet * 2)
-        #print(f'\nRequirements: {(requirements_meet * 2)}')
-
-        # todo look into this part
-        if self.num_or_symbol_used_in_middle > 0:
-            score += (self.num_or_symbol_used_in_middle * 2)
-        #print(f'Special In middle: {(self.num_or_symbol_used_in_middle * 2)}')
-
-        # Negative Scores
-        if self.num_of_uppercase_chars > 0 or self.num_of_lowercase_chars > 0 and self.num_of_num_chars == 0 and self.num_of_symbol_chars == 0:
-            score -= self.num_of_uppercase_chars + self.num_of_lowercase_chars
-        elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars > 0 and self.num_of_symbol_chars == 0:
-            score -= self.num_of_num_chars
-        elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars == 0 and self.num_of_symbol_chars > 0:
-            score -= self.num_of_symbol_chars
-
-        if self.consecutive_uppercase != 0:
-            score -= (self.consecutive_uppercase * 2)
-        if self.consecutive_lowercase != 0:
-            score -= (self.consecutive_lowercase * 2)
-        if self.consecutive_numbers != 0:
-            score -= (self.consecutive_numbers * 2)
-
-        if self.sequential_letters != 0:
-            score -= (self.sequential_letters * 3)
-        elif self.sequential_numbers != 0:
-            score -= (self.sequential_numbers * 3)
-        elif self.sequential_symbols != 0:
-            score -= (self.sequential_symbols * 3)
-
-        #print(f'Total Score: {score}')
-        self.update_strength_bar(score)
-
-    def update_strength_bar(self, score):
-        if score > 100:
-            strength = 1
-        else:
-            strength = score / 100
-        self.strength_bar.set(strength)
-
-        if score <= 40:
-            self.strength_bar.configure(progress_color=RED)
-        elif score < 75:
-            self.strength_bar.configure(progress_color=DARK_GREEN)
-        else:
-            self.strength_bar.configure(progress_color=GREEN)

@@ -55,7 +55,7 @@ class AccountLogin:
             current_key = generate_key(user_account[2], password)
             if current_key == user_account[3]:
                 self.parent.account_id = user_account[0]
-                self.parent.initialize_all_tabs()
+                self.parent.initialize_vault_tab()
                 self.parent.vault_image_frame.destroy()
                 self.parent.new_account_button.destroy()
                 self.login_frame.destroy()

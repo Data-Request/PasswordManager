@@ -3,6 +3,7 @@ import customtkinter
 from PIL import Image
 from vault import VaultTab
 from generator import GeneratorTab
+from password_checker import PasswordCheckerTab
 from history import HistoryTab
 from settings import SettingsTab
 from account_setup import AccountSetup
@@ -42,6 +43,7 @@ class LandingPage(customtkinter.CTk):
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
         self.landing_page_tabview.add('Vault')
         self.landing_page_tabview.add("Generator")
+        self.landing_page_tabview.add("Checker")
         self.landing_page_tabview.add("History")
         self.landing_page_tabview.add("Settings")
         self.landing_page_tabview.tab('Vault').grid_columnconfigure(0, weight=1)
@@ -75,12 +77,14 @@ class LandingPage(customtkinter.CTk):
 
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
-            self.history.refresh_history_tab()
+            self.history.destroy_history_tab()
+            self.history.create_buttons()
 
-    def initialize_all_tabs(self):
+    def initialize_vault_tab(self):
         self.landing_page_tabview.configure(state='normal')
         self.landing_page_tabview.set("Vault")
         VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        PasswordCheckerTab(self.landing_page_tabview, self.width)
         self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
         SettingsTab(self.landing_page_tabview, self.account_id)

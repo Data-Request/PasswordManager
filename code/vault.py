@@ -193,3 +193,4 @@ class VaultTab:
         SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
 
 
+
