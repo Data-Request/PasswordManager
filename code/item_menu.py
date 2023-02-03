@@ -2,22 +2,18 @@ import tkinter
 import customtkinter
 from PIL import Image
 from colors import *
-from sql import get_folder_list, get_all_from_logins, update_login, create_new_login
+from sql import get_folder_list, get_all_from_logins, update_login, create_new_login, delete_login
 from secure_note import SecureNote
 from new_folder import NewFolder
 
-# todo add a delete button to login segmented button
-# todo refresh folders, and secure notes when new one is added
-# todo update save/cancel button by refreshing the frame otherwise it has outdated information
-
 
 class ItemMenu:
-    def __init__(self, landing_tabview, parent, account_id, item_id):
+    def __init__(self, landing_tabview, parent, account_id, login_id):
         super().__init__()
 
         # General Setup
         self.account_id = account_id
-        self.item_id = item_id
+        self.login_id = login_id
         self.landing_tabview = landing_tabview
         self.parent = parent
         self.textbox_width = 300
@@ -31,7 +27,7 @@ class ItemMenu:
 
         # Initialize
         self.create_main_frame()
-        if self.item_id == '':
+        if self.login_id == '':
             if self.parent.name == 'Vault':
                 self.create_vault_option_frame()
             else:
@@ -104,13 +100,14 @@ class ItemMenu:
                 self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
                 self.password_textbox.configure(state='disabled')
         else:
-            if self.item_id:    # Coming from vault tab - edit item
+            if self.login_id:    # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
-                login = get_all_from_logins(self.item_id)
+                login = get_all_from_logins(self.login_id)
                 self.login_name_entry.insert(0, login[0][2])
                 self.username_entry.insert(0, login[0][3])
                 self.password_textbox.insert('end', login[0][4])
                 self.website_entry.insert(0, login[0][5])
+                self.cancel_save_button.configure(values=["Cancel", "Save", 'Delete'])
             else:    # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
 
@@ -151,12 +148,14 @@ class ItemMenu:
 
     def cancel_or_save_event(self, *args):
         if args[0] == 'Cancel':
-            self.destroy_main_frame()
-        elif self.item_id == '':
+            self.main_frame.destroy()
+        elif args[0] == 'Delete':
+            self.create_delete_login_frame()
+        elif self.login_id == '':
             self.save_login()
         else:
             self.edit_login()
-            self.destroy_main_frame()
+            self.main_frame.destroy()
 
     def get_all_login_fields(self):
         login_name = self.login_name_entry.get().strip()
@@ -169,7 +168,8 @@ class ItemMenu:
     def edit_login(self):
         self.warning_label.configure(text='')
         login_name, username, key, url, folder = self.get_all_login_fields()
-        update_login(login_name, username, key, url, folder, self.item_id)
+        update_login(login_name, username, key, url, folder, self.login_id)
+        self.parent.update_folder_frame()
 
     def save_login(self):
         self.warning_label.configure(text='')
@@ -189,8 +189,28 @@ class ItemMenu:
 
         if self.parent.name == 'Generator':
             self.parent.update_history()
+            self.main_frame.destroy()
+        else:
+            self.main_frame.destroy()
+            self.parent.update_folder_frame()
 
-        self.destroy_main_frame()
+    def create_delete_login_frame(self):
+        self.delete_login_frame = customtkinter.CTkFrame(master=self.options_frame, fg_color=GREEN)
+        delete_label = customtkinter.CTkLabel(master=self.delete_login_frame, text_color=BLACK,
+                                              text='Confirm Deletion of Login:',
+                                              font=('Arial', 18))
+        delete_button = customtkinter.CTkSegmentedButton(master=self.delete_login_frame, values=['Yes', 'No'],
+                                                         command=self.delete_event)
+        self.delete_login_frame.place(relx=0.5, rely=0.5, anchor=tkinter.N)
+        self.delete_login_frame.grid_columnconfigure(1, weight=1)
+        self.delete_login_frame.grid_rowconfigure(2, weight=1)
+        delete_label.grid(row=0, column=0, padx=50, pady=(20, 20), sticky="n")
+        delete_button.grid(row=1, column=0, pady=(0, 20), sticky="n")
 
-    def destroy_main_frame(self):
+    def delete_event(self, *args):
+        # Handles the segmented button event, they always send a value with command
+        # Deletes the secure note from database, and resets screen
+        if args[0] == 'Yes':
+            delete_login(self.login_id)
         self.main_frame.destroy()
+        self.parent.update_folder_frame()

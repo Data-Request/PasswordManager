@@ -4,7 +4,6 @@ from colors import *
 from sql import get_single_secure_note, create_new_secure_note, update_secure_note, delete_secure_note
 
 # todo add warning label for empty field
-# todo refresh when a new note is created
 
 
 class SecureNote:
@@ -74,6 +73,7 @@ class SecureNote:
             if not self.note_id:
                 self.save_note()
                 self.parent.main_frame.destroy()
+                self.parent.parent.update_secure_note_frame()
             else:
                 self.edit_note()
                 self.destroy_secure_note_frame()
@@ -97,7 +97,6 @@ class SecureNote:
         update_secure_note(note_name, note, self.note_id)
 
     def create_delete_note_frame(self):
-        # Create Delete Note Confirmation Frame
         self.delete_note_frame = customtkinter.CTkFrame(master=self.secure_note_frame, fg_color=GREEN)
         delete_label = customtkinter.CTkLabel(master=self.delete_note_frame, text_color=BLACK,
                                               text='Confirm Deletion of Secure Note:',
@@ -115,6 +114,6 @@ class SecureNote:
         # Deletes the secure note from database, and resets screen
         if args[0] == 'Yes':
             delete_secure_note(self.note_id)
-        self.delete_note_frame.destroy()
         self.destroy_secure_note_frame()
         self.parent.update_secure_note_frame()
+

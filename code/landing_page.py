@@ -10,6 +10,8 @@ from account_setup import AccountSetup
 from account_login import AccountLogin
 from colors import *
 
+# todo only create tabs when needed delete otherwise
+
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):

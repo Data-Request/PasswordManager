@@ -118,6 +118,11 @@ def update_login_with_unsorted(login_id):
                    'WHERE login_id = ?', ('Unsorted', login_id))
 
 
+def delete_login(login_id):
+    with sqlite3.connect('data.db') as db:
+        db.execute('DELETE FROM Logins WHERE login_id = ?', [login_id])
+
+
 def get_num_of_login(account_id):
     with sqlite3.connect('data.db') as db:
         cursor = db.execute('SELECT * FROM Logins WHERE account_id = ?', [account_id])

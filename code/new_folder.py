@@ -74,6 +74,7 @@ class NewFolder:
         folder_list = get_folder_list(self.account_id)
         folder_string = ''
 
+        # Create new folder_string and update in db
         if self.check_for_valid_entry(new_folder_name, folder_list):
             folder_list.append(new_folder_name)
             folder_list.sort()
@@ -83,9 +84,12 @@ class NewFolder:
                 else:
                     folder_string += f',{word}'
             update_folder_list(folder_string, self.account_id)
+
+            # Reset and refresh all frames
             self.new_folder_frame.destroy()
             self.create_new_folder_frame()
             self.parent.main_frame.destroy()
+            self.parent.parent.update_folder_frame()
 
 
 
