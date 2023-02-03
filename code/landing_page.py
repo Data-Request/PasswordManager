@@ -77,8 +77,7 @@ class LandingPage(customtkinter.CTk):
 
     def tabview_clicked_event(self):
         if self.landing_page_tabview.get() == 'History':
-            self.history.destroy_history_tab()
-            self.history.create_buttons()
+            self.history.refresh_history_tab()
 
     def initialize_vault_tab(self):
         self.landing_page_tabview.configure(state='normal')

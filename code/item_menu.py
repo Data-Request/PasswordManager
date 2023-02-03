@@ -6,6 +6,7 @@ from sql import get_folder_list, get_all_from_logins, update_login, create_new_l
 from secure_note import SecureNote
 from new_folder import NewFolder
 
+# todo add a delete button to login segmented button
 # todo refresh folders, and secure notes when new one is added
 # todo update save/cancel button by refreshing the frame otherwise it has outdated information
 

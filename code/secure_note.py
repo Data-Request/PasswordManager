@@ -84,7 +84,7 @@ class SecureNote:
             else:
                 self.parent.main_frame.destroy()
         else:
-            self.crate_delete_note_frame()
+            self.create_delete_note_frame()
 
     def save_note(self):
         note_name = self.name_entry.get().strip()
@@ -96,7 +96,7 @@ class SecureNote:
         note = self.note_textbox.get('0.0', 'end').strip()
         update_secure_note(note_name, note, self.note_id)
 
-    def crate_delete_note_frame(self):
+    def create_delete_note_frame(self):
         # Create Delete Note Confirmation Frame
         self.delete_note_frame = customtkinter.CTkFrame(master=self.secure_note_frame, fg_color=GREEN)
         delete_label = customtkinter.CTkLabel(master=self.delete_note_frame, text_color=BLACK,

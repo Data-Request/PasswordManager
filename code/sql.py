@@ -104,11 +104,18 @@ def create_new_login(account_id, login_name, username, key, url, folder):
                    (account_id, login_name, username, key, url, folder))
 
 
-def update_login(item_name, username, key, url, folder, login_id):
+def update_login(login_name, username, key, url, folder, login_id):
     with sqlite3.connect('data.db') as db:
         db.execute('UPDATE Logins '
                    'SET login_name = ?, username = ?, key = ?, url = ?, folder = ?'
-                   'WHERE login_id = ?', (item_name, username, key, url, folder, login_id))
+                   'WHERE login_id = ?', (login_name, username, key, url, folder, login_id))
+
+
+def update_login_with_unsorted(login_id):
+    with sqlite3.connect('data.db') as db:
+        db.execute('UPDATE Logins '
+                   'SET folder = ?'
+                   'WHERE login_id = ?', ('Unsorted', login_id))
 
 
 def get_num_of_login(account_id):
