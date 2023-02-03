@@ -16,6 +16,7 @@ class AccountSetup:
         self.create_warning_label()
 
     def create_new_account_frame(self):
+        # Create and place new account frame
         self.new_account_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.new_username_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Username:", anchor="w")
@@ -36,7 +37,6 @@ class AccountSetup:
                                                                     unselected_color=GREEN,
                                                                     unselected_hover_color=DARK_GREEN,
                                                                     command=self.back_forward_button_event)
-        # New Account Placement
         self.new_account_frame.place(relx=0.5, rely=0.38, anchor=tkinter.N)
         self.new_account_frame.grid_columnconfigure(1, weight=1)
         self.new_account_frame.grid_rowconfigure(9, weight=1)
@@ -61,7 +61,7 @@ class AccountSetup:
         else:
             self.new_account_frame.destroy()
             self.warning_label.destroy()
-            self.parent.create_log_in_widgets()
+            self.parent.initialize_account_login()
 
     def create_new_account(self):
         username = self.new_username.get().strip()
@@ -72,11 +72,11 @@ class AccountSetup:
         master_password_verify = self.new_master_password_verify.get().strip()
 
         if self.check_for_invalid_entries(username, email, master_password, master_password_verify):
+            self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
             return
 
         username_row = get_username_with_username(username)
         email_row = get_email_with_email(email)
-
         if username_row is not None:
             self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
             self.warning_label.configure(text='Username taken.')
@@ -84,15 +84,17 @@ class AccountSetup:
         elif email_row is not None:
             self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
             self.warning_label.configure(text='Email already in use.')
-        else:
-            salt = os.urandom(32)
-            key = generate_key(salt, master_password)
-            create_new_user_account(username, email, salt, key)
-            self.new_account_frame.destroy()
-            self.warning_label.destroy()
-            self.parent.create_log_in_widgets()
+            return
+
+        salt = os.urandom(32)
+        key = generate_key(salt, master_password)
+        create_new_user_account(username, email, salt, key)
+        self.new_account_frame.destroy()
+        self.warning_label.destroy()
+        self.parent.create_login_frame()
 
     def check_for_invalid_entries(self, username, email, master_password, master_password_verify):
+        # Checks for blank fields and mismatched passwords
         invalid_entries = False
         if username == '':
             self.warning_label.configure(text='Username is blank.')
@@ -112,11 +114,10 @@ class AccountSetup:
         elif master_password != master_password_verify:
             self.warning_label.configure(text='Passwords do not match.')
             invalid_entries = True
-        if invalid_entries:
-            self.refresh_and_insert_fields(username, email, master_password, master_password_verify)
         return invalid_entries
 
     def refresh_and_insert_fields(self, username, email, master_password, master_password_verify):
+        # Refresh the page and inserts the entered text back into each field
         self.new_account_frame.destroy()
         self.create_new_account_frame()
         self.new_username.insert(0, username)

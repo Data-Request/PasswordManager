@@ -10,8 +10,6 @@ from account_setup import AccountSetup
 from account_login import AccountLogin
 from colors import *
 
-# todo only create tabs when needed delete otherwise
-
 
 class LandingPage(customtkinter.CTk):
     def __init__(self):
@@ -34,14 +32,15 @@ class LandingPage(customtkinter.CTk):
 
         # Initialize
         self.create_tabview()
-        self.create_vault_image()
-        self.create_log_in_widgets()
+        self.create_vault_image_frame()
+        self.initialize_account_login()
 
     def create_tabview(self):
+        # Creates the main tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=GREEN,
                                                              border_width=3, border_color=GREEN, state='disabled',
-                                                             text_color=WHITE, command=self.tabview_clicked_event)
+                                                             text_color=WHITE, command=self.load_current_tabview)
         self.landing_page_tabview.place(relx=0.5, rely=0.015, anchor=tkinter.N)
         self.landing_page_tabview.add('Vault')
         self.landing_page_tabview.add("Generator")
@@ -50,20 +49,20 @@ class LandingPage(customtkinter.CTk):
         self.landing_page_tabview.add("Settings")
         self.landing_page_tabview.tab('Vault').grid_columnconfigure(0, weight=1)
 
-    def create_vault_image(self):
-        # Create Vault Image Frame
+    def create_vault_image_frame(self):
+        # Create and place vault image frame
         self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.vault_image_button = customtkinter.CTkButton(master=self.vault_image_frame, text='',
                                                           image=self.vault_image,
                                                           fg_color="transparent", state='disabled')
-        # Vault Image Frame Placement
-        self.vault_image_frame.place(relx=0.5, rely=0.06, anchor=tkinter.N)
+        self.vault_image_frame.place(relx=0.5, rely=0.04, anchor=tkinter.N)
         self.vault_image_frame.grid_columnconfigure(1, weight=1)
         self.vault_image_frame.grid_rowconfigure(1, weight=1)
         self.vault_image_button.grid(row=0, column=0, pady=(0, 20), sticky="n")
 
-    def create_log_in_widgets(self):
+    def initialize_account_login(self):
+        # Initializes AccountLogin and creates new_account_button
         self.account_login = AccountLogin(self)
         self.new_account_button = customtkinter.CTkButton(master=self.landing_page_tabview.tab('Vault'), width=300,
                                                           text="                Don't have an account?",
@@ -73,19 +72,59 @@ class LandingPage(customtkinter.CTk):
 
     def create_account_setup(self):
         self.account_login.login_frame.destroy()
-        self.account_login.warning_label.destroy()
         self.new_account_button.destroy()
         self.account_setup = AccountSetup(self)
 
-    def tabview_clicked_event(self):
-        if self.landing_page_tabview.get() == 'History':
-            self.history.refresh_history_tab()
+    def load_current_tabview(self):
+        # Deletes old tab and initialized current tab
+        self.delete_all_tabs()
+        if self.landing_page_tabview.get() == 'Vault':
+            self.vault = VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        elif self.landing_page_tabview.get() == 'Generator':
+            self.generator = GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        elif self.landing_page_tabview.get() == 'Checker':
+            self.checker = PasswordCheckerTab(self.landing_page_tabview, self.width)
+        elif self.landing_page_tabview.get() == 'History':
+            self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+        elif self.landing_page_tabview.get() == 'Settings':
+            self.settings = SettingsTab(self.landing_page_tabview, self.account_id)
 
-    def initialize_vault_tab(self):
+    def delete_all_tabs(self):
+        # Try to delete an instance of each class if we are not on that classes tab
+        if self.landing_page_tabview.get() != 'Vault':
+            try:
+                del self.vault
+            except AttributeError:
+                pass
+
+        if self.landing_page_tabview.get() != 'Generator':
+            try:
+                del self.generator
+            except AttributeError:
+                pass
+
+        if self.landing_page_tabview.get() != 'Checker':
+            try:
+                del self.checker
+            except AttributeError:
+                pass
+
+        if self.landing_page_tabview.get() != 'History':
+            try:
+                del self.history
+            except AttributeError:
+                pass
+
+        if self.landing_page_tabview.get() != 'Settings':
+            try:
+                del self.settings
+            except AttributeError:
+                pass
+
+    def enabled_tabview(self):
+        # Changes state to allow clicking of tabs after user is logged in called from account_login
         self.landing_page_tabview.configure(state='normal')
         self.landing_page_tabview.set("Vault")
-        VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)
-        GeneratorTab(self.landing_page_tabview, self.width, self.height, self.account_id)
-        PasswordCheckerTab(self.landing_page_tabview, self.width)
-        self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
-        SettingsTab(self.landing_page_tabview, self.account_id)
+        self.vault_image_frame.destroy()
+        self.new_account_button.destroy()
+        self.vault = VaultTab(self.landing_page_tabview, self.width, self.height, self.account_id)

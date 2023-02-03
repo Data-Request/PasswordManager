@@ -18,6 +18,7 @@ class NewFolder:
         self.create_new_folder_frame()
 
     def create_warning_label_frame(self):
+        # Create and place warning label frame
         self.warning_label_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.warning_label = customtkinter.CTkLabel(master=self.warning_label_frame, text_color=RED, text='')
         self.warning_label_frame.grid(row=3, column=0, sticky="n")
@@ -26,6 +27,7 @@ class NewFolder:
         self.warning_label.grid(row=0, column=0, pady=(0, 0), sticky="n")
 
     def create_new_folder_frame(self):
+        # Create and place new folder frame
         self.new_folder_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.name_label = customtkinter.CTkLabel(master=self.new_folder_frame, text="Name:")
         self.name_entry = customtkinter.CTkEntry(master=self.new_folder_frame, width=self.entry_width)
