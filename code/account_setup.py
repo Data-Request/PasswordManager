@@ -2,7 +2,7 @@ import os
 import tkinter
 import customtkinter
 from validate_email_address import validate_email
-from support import generate_key
+from support import generate_password_key
 from sql import create_new_user_account, get_username_with_username, get_email_with_email
 from colors import *
 
@@ -87,7 +87,7 @@ class AccountSetup:
             return
 
         salt = os.urandom(32)
-        key = generate_key(salt, master_password)
+        key = generate_password_key(salt, master_password)
         create_new_user_account(username, email, salt, key)
         self.new_account_frame.destroy()
         self.warning_label.destroy()

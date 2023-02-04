@@ -13,7 +13,7 @@ def create_database_tables():
         salt TEXT, key TEXT, account_creation TEXT, last_login TEXT, folder_list Text)""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS History
-        (account_id INTEGER, key TEXT, timestamp TEXT,
+        (account_id INTEGER, key TEXT, timestamp TEXT, key TEXT,
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS Logins 
@@ -22,7 +22,7 @@ def create_database_tables():
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
         db.execute(""" CREATE TABLE IF NOT EXISTS Secure_Notes 
-        (note_id INTEGER PRIMARY KEY, account_id INTEGER, note_name TEXT, note TEXT, timestamp TEXT,
+        (note_id INTEGER PRIMARY KEY, account_id INTEGER, note_name TEXT, note TEXT, timestamp TEXT, key TEXT,
         FOREIGN KEY(account_id) REFERENCES Person (account_id) )""")
 
 
@@ -145,11 +145,11 @@ def get_single_secure_note(note_id):
         return cursor.fetchall()
 
 
-def create_new_secure_note(account_id, note_name, note):
+def create_new_secure_note(account_id, note_name, note, key):
     with sqlite3.connect('data.db') as db:
         db.execute('INSERT INTO Secure_Notes '
-                   '(account_id, note_name, note, timestamp) VALUES (?,?,?,?)',
-                   (account_id, note_name, note, get_timestamp()))
+                   '(account_id, note_name, note, timestamp, key) VALUES (?,?,?,?,?)',
+                   (account_id, note_name, note, get_timestamp(), key))
 
 
 def update_secure_note(note_name, note, note_id):

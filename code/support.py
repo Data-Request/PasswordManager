@@ -1,9 +1,10 @@
 import hashlib
+from cryptography.fernet import Fernet
 import secrets
 from datetime import datetime
 
 
-def generate_key(salt, password):
+def generate_password_key(salt, password):
     key = hashlib.pbkdf2_hmac(
         'sha256',  # The hash digest algorithm for HMAC
         password.encode('utf-8'),  # Convert the password to bytes
@@ -11,6 +12,32 @@ def generate_key(salt, password):
         100000  # It is recommended to use at least 100,000 iterations of SHA-256
     )
     return key
+
+
+def generate_encryption_key():
+    return Fernet.generate_key()
+
+
+def encrypt_text(key, text):
+    encrypter = Fernet(key)
+    return encrypter.encrypt(text.encode('utf-8'))
+
+
+def decrypt_text(key, text):
+    decrypter = Fernet(key)
+    return decrypter.decrypt(text)
+
+
+def get_encrypted_note_and_name(key, note_name, note):
+    encrypted_note_name = encrypt_text(key, note_name)
+    encrypted_note = encrypt_text(key, note)
+    return encrypted_note_name, encrypted_note
+
+
+def get_decrypted_note_and_name(key, note_name, note):
+    decrypted_note_name = decrypt_text(key, note_name)
+    decrypted_note = decrypt_text(key, note)
+    return decrypted_note_name, decrypted_note
 
 
 def create_username():

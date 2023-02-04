@@ -1,7 +1,8 @@
 import tkinter
 import customtkinter
 from colors import *
-from sql import get_single_secure_note, create_new_secure_note, update_secure_note, delete_secure_note
+from sql import *
+from support import generate_encryption_key, get_encrypted_note_and_name, get_decrypted_note_and_name
 
 # todo add warning label for empty field
 
@@ -16,14 +17,13 @@ class SecureNote:
         self.parent = parent
         self.note_id = note_id
         self.textbox_width = 300
-        self.textbox_height = 10
         self.note_textbox_height = 250
 
         # Initialize
         self.create_secure_note_frame()
 
     def create_secure_note_frame(self):
-        # Create Secure Note Frame
+        # Create and place Secure Note Frame, change configs based on if we are creating or editing a note
         self.secure_note_frame = customtkinter.CTkFrame(master=self.parent_frame, fg_color="transparent")
         self.title_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="")
         self.name_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Name:")
@@ -37,7 +37,6 @@ class SecureNote:
                                                                    width=300, unselected_color=GREEN,
                                                                    unselected_hover_color=DARK_GREEN,
                                                                    command=self.cancel_save_delete_event)
-        # Secure Note Frame Placement
         self.secure_note_frame.grid(row=3, column=0, sticky="n")
         self.secure_note_frame.grid_columnconfigure(1, weight=1)
         self.secure_note_frame.grid_rowconfigure(6, weight=1)
@@ -53,10 +52,11 @@ class SecureNote:
             self.note_textbox.configure(height=self.note_textbox_height + 80)
             self.cancel_save_button.configure(values=['Cancel', 'Save', 'Delete'])
             self.cancel_save_button.grid(row=5, column=0, pady=(0, 30), sticky="n")
-            # Get and display note from db
-            note = get_single_secure_note(self.note_id)
-            self.name_entry.insert(0, note[0][2])
-            self.note_textbox.insert('end', note[0][3])
+            # Get note from db then decrypt and display
+            note_row = get_single_secure_note(self.note_id)
+            decrypted_note_name, decrypted_note = get_decrypted_note_and_name(note_row[0][5], note_row[0][2], note_row[0][3])
+            self.name_entry.insert(0, decrypted_note_name)
+            self.note_textbox.insert('end', decrypted_note)
         else:      # We are adding an item so we set default placements
             self.name_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
             self.note_label.grid(row=3, column=0, sticky="w")
@@ -87,16 +87,24 @@ class SecureNote:
             self.create_delete_note_frame()
 
     def save_note(self):
-        note_name = self.name_entry.get().strip()
-        note = self.note_textbox.get('0.0', 'end').strip()
-        create_new_secure_note(self.account_id, note_name, note)
+        # Grabs note and encrypts then stores in db
+        note_name_input = self.name_entry.get().strip()
+        note_input = self.note_textbox.get('0.0', 'end').strip()
+        key = generate_encryption_key()
+        encrypted_note_name, encrypted_note = get_encrypted_note_and_name(key, note_name_input, note_input)
+        create_new_secure_note(self.account_id, encrypted_note_name, encrypted_note, key)
 
     def edit_note(self):
-        note_name = self.name_entry.get().strip()
-        note = self.note_textbox.get('0.0', 'end').strip()
-        update_secure_note(note_name, note, self.note_id)
+        # Grab note inputs and the key from the note row of db, then encrypt both and update note in db
+        note_name_input = self.name_entry.get().strip()
+        note_input = self.note_textbox.get('0.0', 'end').strip()
+        note_row = get_single_secure_note(self.note_id)
+        key = note_row[0][5]
+        encrypted_note_name, encrypted_note = get_encrypted_note_and_name(key, note_name_input, note_input)
+        update_secure_note(encrypted_note_name, encrypted_note, self.note_id)
 
     def create_delete_note_frame(self):
+        # Create and place delete note frame
         self.delete_note_frame = customtkinter.CTkFrame(master=self.secure_note_frame, fg_color=GREEN)
         delete_label = customtkinter.CTkLabel(master=self.delete_note_frame, text_color=BLACK,
                                               text='Confirm Deletion of Secure Note:',

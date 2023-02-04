@@ -8,6 +8,7 @@ from right_button_sidebar import RightButtonSidebar
 from item_menu import ItemMenu
 from secure_note import SecureNote
 from settings import TEXTBOX_FONT
+from support import decrypt_text
 from sql import *
 
 
@@ -196,10 +197,14 @@ class VaultTab:
         self.secure_notes_row_frame.pack()
 
     def create_secure_notes_row(self):
+        # Grabs all notes from db for an account and decrypts the name to be shown, creates one row per note
         notes = get_all_from_secure_notes(self.account_id)
         for index in range(len(notes)):
+            note_name = notes[index][2]     # 2 is column count from db
+            key = notes[index][5]           # 5 is column count from db
+            decrypted_note_name = decrypt_text(key, note_name)
             item_row = customtkinter.CTkFrame(master=self.secure_notes_row_frame, fg_color="transparent")
-            note_button = customtkinter.CTkButton(master=item_row, text=notes[index][2],
+            note_button = customtkinter.CTkButton(master=item_row, text=decrypted_note_name,
                                                   image=self.note_image, compound='left',  bg_color='transparent',
                                                   text_color=BLACK, anchor='w', width=350, corner_radius=15,
                                                   command=functools.partial(self.edit_note, (notes[index][0])))

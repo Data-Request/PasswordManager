@@ -1,7 +1,7 @@
 import tkinter
 import customtkinter
 from PIL import Image
-from support import generate_key
+from support import generate_password_key
 from sql import update_last_login, get_user_account
 from colors import *
 
@@ -47,7 +47,7 @@ class AccountLogin:
             self.warning_label.configure(text='Incorrect username or password.')
             return
 
-        current_key = generate_key(user_account[2], password)
+        current_key = generate_password_key(user_account[2], password)
         if current_key != user_account[3]:   # Password key doesnt match key in db
             self.warning_label.configure(text='Incorrect username or password.')
             return
