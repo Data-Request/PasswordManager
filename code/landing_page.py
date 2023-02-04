@@ -1,6 +1,5 @@
 import tkinter
 import customtkinter
-from PIL import Image
 from vault import VaultTab
 from generator import GeneratorTab
 from password_checker import PasswordCheckerTab
@@ -9,6 +8,7 @@ from settings import SettingsTab
 from account_setup import AccountSetup
 from account_login import AccountLogin
 from colors import *
+from images import VAULT_IMAGE, ACCOUNT_IMAGE
 
 
 class LandingPage(customtkinter.CTk):
@@ -23,12 +23,6 @@ class LandingPage(customtkinter.CTk):
         self.tabview_width = self.width - 50
         self.tabview_height = self.height - 30
         self.account_id = None
-
-        # Images
-        self.vault_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\vault-green.png"), size=(180, 180))
-        self.account_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\account.png"), size=(20, 20))
 
         # Initialize
         self.create_tabview()
@@ -54,7 +48,7 @@ class LandingPage(customtkinter.CTk):
         self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.vault_image_button = customtkinter.CTkButton(master=self.vault_image_frame, text='',
-                                                          image=self.vault_image,
+                                                          image=VAULT_IMAGE,
                                                           fg_color="transparent", state='disabled')
         self.vault_image_frame.place(relx=0.5, rely=0.04, anchor=tkinter.N)
         self.vault_image_frame.grid_columnconfigure(1, weight=1)
@@ -66,7 +60,7 @@ class LandingPage(customtkinter.CTk):
         self.account_login = AccountLogin(self)
         self.new_account_button = customtkinter.CTkButton(master=self.landing_page_tabview.tab('Vault'), width=300,
                                                           text="                Don't have an account?",
-                                                          text_color=BLACK, image=self.account_image, compound='left',
+                                                          text_color=BLACK, image=ACCOUNT_IMAGE, compound='left',
                                                           command=self.create_account_setup, anchor='w')
         self.new_account_button.place(relx=0.5, rely=0.98, anchor=tkinter.S)
 
@@ -85,7 +79,7 @@ class LandingPage(customtkinter.CTk):
         elif self.landing_page_tabview.get() == 'Checker':
             self.checker = PasswordCheckerTab(self.landing_page_tabview, self.width)
         elif self.landing_page_tabview.get() == 'History':
-            self.history = HistoryTab(self.landing_page_tabview, self.width, self.height, self.account_id)
+            self.history = HistoryTab(self.landing_page_tabview, self.width, self.account_id)
         elif self.landing_page_tabview.get() == 'Settings':
             self.settings = SettingsTab(self.landing_page_tabview, self.account_id)
 

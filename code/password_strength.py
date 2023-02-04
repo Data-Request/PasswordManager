@@ -3,6 +3,7 @@ import customtkinter
 import string
 from colors import *
 
+
 # todo fix repeated characters scoring need a better way to calculate
 # todo fix consecutive numbers calc
 
@@ -151,9 +152,11 @@ class PasswordStrength:
             self.all_scores.update({'num_or_symbol_used_in_middle': (self.num_or_symbol_used_in_middle * 2)})
 
         # Negative Scores
-        #self.all_scores.update({'repeat_char_score': self.repeat_char * -1})
-        if (self.num_of_uppercase_chars > 0 or self.num_of_lowercase_chars > 0) and self.num_of_num_chars == 0 and self.num_of_symbol_chars == 0:
-            self.all_scores.update({'only_letter_score': (self.num_of_uppercase_chars + self.num_of_lowercase_chars) * -1})
+        # self.all_scores.update({'repeat_char_score': self.repeat_char * -1})
+        if (
+                self.num_of_uppercase_chars > 0 or self.num_of_lowercase_chars > 0) and self.num_of_num_chars == 0 and self.num_of_symbol_chars == 0:
+            self.all_scores.update(
+                {'only_letter_score': (self.num_of_uppercase_chars + self.num_of_lowercase_chars) * -1})
         elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars > 0 and self.num_of_symbol_chars == 0:
             self.all_scores.update({'only_numbers_score': self.num_of_num_chars * -1})
         elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars == 0 and self.num_of_symbol_chars > 0:

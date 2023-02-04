@@ -1,9 +1,9 @@
 import tkinter
 import customtkinter
-from PIL import Image
 from support import generate_master_key, generate_master_password_hash
 from sql import update_last_login, get_user_account_with_email
 from colors import *
+from images import KEY_IMAGE
 
 
 class AccountLogin:
@@ -11,20 +11,19 @@ class AccountLogin:
         super().__init__()
 
         self.parent = parent
-        self.key_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
         self.create_login_frame()
 
     def create_login_frame(self):
         # Create and place Login Button Frame
-        self.login_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'), fg_color="transparent")
+        self.login_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'),
+                                                  fg_color="transparent")
         self.warning_label = customtkinter.CTkLabel(master=self.login_frame, text='', text_color=RED)
         self.email_label = customtkinter.CTkLabel(master=self.login_frame, text="Email:", anchor="w")
         self.email_entry = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Email")
         self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
         self.password_entry = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
-                                                    text='                             Log in', image=self.key_image,
+                                                    text='                             Log in', image=KEY_IMAGE,
                                                     compound='left', command=self.validate_log_info, anchor='w')
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE, width=300,
                                                    text='Your vault is locked. Verify your identity to continue.')
@@ -44,14 +43,14 @@ class AccountLogin:
         email_input = self.email_entry.get()
         email_input.lower()
         user_account = get_user_account_with_email(email_input)
-        if user_account is None:    # No user with entered email in db
+        if user_account is None:  # No user with entered email in db
             self.warning_label.configure(text='Incorrect email or password.')
             return
         # Checks if password input matches hashed master password in db
         password_input = self.password_entry.get()
         current_password_key = generate_master_key(user_account[2], password_input)
         current_password_hash = generate_master_password_hash(password_input, current_password_key)
-        if current_password_hash != user_account[4]:   # Password hash doesn't match hash in db
+        if current_password_hash != user_account[4]:  # Password hash doesn't match hash in db
             self.warning_label.configure(text='Incorrect email or password.')
             return
         # Account is good to log in, update login timestamp in db and grab account id then destroy all widgets created

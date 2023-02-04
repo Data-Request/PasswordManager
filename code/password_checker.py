@@ -38,19 +38,26 @@ class PasswordCheckerTab:
         self.additions_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color='transparent')
         self.additions_label = customtkinter.CTkLabel(master=self.additions_frame, text='Additions:')
         self.num_of_char_label = customtkinter.CTkLabel(master=self.additions_frame, text='Characters Used:')
-        self.num_of_char_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.num_of_char_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                        state='disabled')
         self.middle_char_label = customtkinter.CTkLabel(master=self.additions_frame, text='Middle Non-Letter:')
-        self.middle_char_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.middle_char_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                        state='disabled')
         self.uppercase_label = customtkinter.CTkLabel(master=self.additions_frame, text='Uppercase Letters:')
-        self.uppercase_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.uppercase_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                      state='disabled')
         self.lowercase_label = customtkinter.CTkLabel(master=self.additions_frame, text='Lowercase Letters:')
-        self.lowcercase_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.lowcercase_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                       state='disabled')
         self.numbers_label = customtkinter.CTkLabel(master=self.additions_frame, text='Numbers:')
-        self.numbers_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.numbers_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                    state='disabled')
         self.symbols_label = customtkinter.CTkLabel(master=self.additions_frame, text='Symbols:')
-        self.symbols_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.symbols_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                    state='disabled')
         self.requirements_label = customtkinter.CTkLabel(master=self.additions_frame, text='Requirements:')
-        self.requirements_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width, state='disabled')
+        self.requirements_entry = customtkinter.CTkEntry(master=self.additions_frame, width=self.entry_width,
+                                                         state='disabled')
         self.additions_frame.grid(row=2, column=0, sticky="n")
         self.additions_frame.grid_columnconfigure(4, weight=1)
         self.additions_frame.grid_rowconfigure(5, weight=1)
@@ -74,23 +81,32 @@ class PasswordCheckerTab:
         self.subtractions_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color='transparent')
         self.subtractions_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Subtractions:')
         self.only_letters_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Letters Only:')
-        self.only_letters_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.only_letters_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                         state='disabled')
         self.only_numbers_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Numbers Only:')
-        self.only_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.only_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                         state='disabled')
         self.consec_uppercase_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Consec Uppercase:')
-        self.consec_uppercase_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.consec_uppercase_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                             state='disabled')
         self.consec_lowercase_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Consec Lowercase:')
-        self.consec_lowercase_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.consec_lowercase_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                             state='disabled')
         self.consec_numbers_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Consec Numbers:')
-        self.consec_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.consec_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                           state='disabled')
         self.sequen_numbers_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Sequential Numbers:')
-        self.sequen_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.sequen_numbers_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                           state='disabled')
         self.sequen_symbols_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Sequential Symbols:')
-        self.sequen_symbols_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.sequen_symbols_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                           state='disabled')
         self.sequen_letters_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Sequential Letters:')
-        self.sequen_letters_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.sequen_letters_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                           state='disabled')
         self.repeat_char_label = customtkinter.CTkLabel(master=self.subtractions_frame, text='Repeat Characters:')
-        self.repeat_char_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width, state='disabled')
+        self.repeat_char_entry = customtkinter.CTkEntry(master=self.subtractions_frame, width=self.entry_width,
+                                                        state='disabled')
         self.subtractions_frame.grid(row=3, column=0, pady=(25, 0), sticky="n")
         self.subtractions_frame.grid_columnconfigure(4, weight=1)
         self.subtractions_frame.grid_rowconfigure(5, weight=1)
@@ -237,7 +253,8 @@ class PasswordCheckerTab:
         password_length = len(password)
         self.password_strength_frame.reset_scoring_variables()
         for index, char in enumerate(password):
-            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols, password_length)
+            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols,
+                                                                        password_length)
         self.password_strength_frame.update_advanced_scoring_variables(self.valid_symbols, password)
         self.password_strength_frame.calc_password_strength_score(password_length)
         self.refresh_addition_subtraction_frames()

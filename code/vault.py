@@ -1,15 +1,15 @@
-import tkinter
-import customtkinter
 import string
+import tkinter
 import functools
-from colors import *
-from PIL import Image
-from right_button_sidebar import RightButtonSidebar
-from item_menu import ItemMenu
-from secure_note import SecureNote
-from settings import TEXTBOX_FONT
-from support import decrypt_text
+import customtkinter
 from sql import *
+from colors import *
+from item_menu import ItemMenu
+from support import decrypt_text
+from settings import TEXTBOX_FONT
+from secure_note import SecureNote
+from right_button_sidebar import RightButtonSidebar
+from images import DELETE_IMAGE, MENU_IMAGE, KEY_IMAGE, USER_IMAGE, NOTE_IMAGE
 
 
 class VaultTab:
@@ -26,16 +26,7 @@ class VaultTab:
         self.button_height = 25
         self.main_textbox_width = width - 115
         self.main_textbox_height = 107
-        self.website = ''   # Child uses to launch website
-
-        # Images
-        self.folder_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\folder-open-solid.png"), size=(20, 20))
-        self.menu_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\menu.png"), size=(20, 20))
-        self.user_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\user.png"), size=(20, 20))
-        self.key_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\key-solid.png"), size=(20, 20))
-        self.note_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\note.png"), size=(20, 20))
-        self.delete_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\trash"
-                                                              r"-solid.png"), size=(20, 20))
+        self.website = ''  # Child uses to launch website
 
         # Initialize
         self.create_main_textbox()
@@ -53,7 +44,8 @@ class VaultTab:
 
     def create_bottom_label_frame(self):
         # Create and Place Bottom Label Frame
-        self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'), fg_color="transparent")
+        self.bottom_label_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'),
+                                                         fg_color="transparent")
         self.bottom_label = customtkinter.CTkLabel(master=self.bottom_label_frame,
                                                    text=f'Number of Logins: {get_num_of_login(self.account_id)}')
         self.bottom_label_frame.grid_columnconfigure(1, weight=1)
@@ -83,20 +75,23 @@ class VaultTab:
 
     def create_folder_frame(self):
         self.folder_container = tkinter.Frame(self.vault_tabview.tab('Login'), bg=MID_DARK_GRAY2)
-        folder_canvas = tkinter.Canvas(self.folder_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=300, width=355)
+        folder_canvas = tkinter.Canvas(self.folder_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2,
+                                       height=300, width=355)
         folder_scrollbar = customtkinter.CTkScrollbar(self.folder_container, command=folder_canvas.yview)
         self.folder_scrollable_frame = tkinter.Frame(folder_canvas, bg=MID_DARK_GRAY2)
-        self.folder_scrollable_frame.bind("<Configure>", lambda e: folder_canvas.configure(scrollregion=folder_canvas.bbox("all")))
+        self.folder_scrollable_frame.bind("<Configure>",
+                                          lambda e: folder_canvas.configure(scrollregion=folder_canvas.bbox("all")))
         folder_canvas.create_window((0, 0), window=self.folder_scrollable_frame, anchor="nw")
         folder_canvas.configure(yscrollcommand=folder_scrollbar.set)
 
         # Create folder Menu and place everything
         folder_list = get_folder_list(self.account_id)
-        self.folder_menu = customtkinter.CTkOptionMenu(master=self.folder_container, values=folder_list, text_color=BLACK,
+        self.folder_menu = customtkinter.CTkOptionMenu(master=self.folder_container, values=folder_list,
+                                                       text_color=BLACK,
                                                        width=360, fg_color=DARK_GREEN, dropdown_text_color=BLACK,
                                                        dropdown_fg_color=GREEN, command=self.update_folder_row_frame)
         delete_folder_button = customtkinter.CTkButton(master=self.folder_container, width=300,
-                                                       image=self.delete_image, compound='left', anchor='w',
+                                                       image=DELETE_IMAGE, compound='left', anchor='w',
                                                        text='                         Delete Folder',
                                                        text_color=BLACK, command=self.create_delete_folder_frame)
         self.folder_menu.pack(pady=(10, 0))
@@ -133,15 +128,19 @@ class VaultTab:
             decrypted_login_name = decrypt_text(master_key, folder_row[index][2])
             login_row = customtkinter.CTkFrame(master=self.row_frame, fg_color="transparent")
             login_name_button = customtkinter.CTkButton(master=login_row, text=decrypted_login_name,
-                                                       image=self.menu_image, compound='left', bg_color='transparent',
-                                                       text_color=BLACK, anchor='w', width=270,
-                                                       command=functools.partial(self.edit_item, folder_row[index][0]))
-            password_button = customtkinter.CTkButton(master=login_row, text='', image=self.key_image, compound='left',
+                                                        image=MENU_IMAGE, compound='left', bg_color='transparent',
+                                                        text_color=BLACK, anchor='w', width=270,
+                                                        command=functools.partial(self.edit_item, folder_row[index][0]))
+            password_button = customtkinter.CTkButton(master=login_row, text='', image=KEY_IMAGE, compound='left',
                                                       bg_color='transparent', text_color=BLACK, anchor='w', width=25,
-                                                      command=functools.partial(self.update_main_textbox, (folder_row[index][4]), folder_row[index][5]))
-            user_button = customtkinter.CTkButton(master=login_row, text='', image=self.user_image, compound='left',
+                                                      command=functools.partial(self.update_main_textbox,
+                                                                                (folder_row[index][4]),
+                                                                                folder_row[index][5]))
+            user_button = customtkinter.CTkButton(master=login_row, text='', image=USER_IMAGE, compound='left',
                                                   bg_color='transparent', text_color=BLACK, anchor='w', width=25,
-                                                  command=functools.partial(self.update_main_textbox, (folder_row[index][3]), folder_row[index][5]))
+                                                  command=functools.partial(self.update_main_textbox,
+                                                                            (folder_row[index][3]),
+                                                                            folder_row[index][5]))
             login_name_button.pack(side='left', pady=(10, 0))
             password_button.pack(side='right', pady=(10, 0))
             user_button.pack(side='right', pady=(10, 0))
@@ -168,10 +167,12 @@ class VaultTab:
 
     def create_secure_notes_frame(self):
         note_container = tkinter.Frame(self.vault_tabview.tab('Secure Notes'), bg=MID_DARK_GRAY2)
-        note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380, width=355)
+        note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380,
+                                     width=355)
         note_scrollbar = customtkinter.CTkScrollbar(note_container, command=note_canvas.yview)
         self.note_scrollable_frame = tkinter.Frame(note_canvas, bg=MID_DARK_GRAY2)
-        self.note_scrollable_frame.bind("<Configure>", lambda e: note_canvas.configure(scrollregion=note_canvas.bbox("all")))
+        self.note_scrollable_frame.bind("<Configure>",
+                                        lambda e: note_canvas.configure(scrollregion=note_canvas.bbox("all")))
         note_canvas.create_window((0, 0), window=self.note_scrollable_frame, anchor="nw")
         note_canvas.configure(yscrollcommand=note_scrollbar.set)
         note_container.pack()
@@ -207,7 +208,7 @@ class VaultTab:
             decrypted_note_name = decrypt_text(master_key, note_name)
             item_row = customtkinter.CTkFrame(master=self.secure_notes_row_frame, fg_color="transparent")
             note_button = customtkinter.CTkButton(master=item_row, text=decrypted_note_name,
-                                                  image=self.note_image, compound='left',  bg_color='transparent',
+                                                  image=NOTE_IMAGE, compound='left', bg_color='transparent',
                                                   text_color=BLACK, anchor='w', width=350, corner_radius=15,
                                                   command=functools.partial(self.edit_note, (notes[index][0])))
             note_button.pack(pady=(20, 0))
@@ -219,7 +220,7 @@ class VaultTab:
     def delete_folder(self, *args):
         # Handles the segmented button event, they always send a value with command=
         current_folder = self.folder_menu.get()
-        if args[0] == 'No' or current_folder == 'Unsorted':     # Stops deletion of default unsorted folder
+        if args[0] == 'No' or current_folder == 'Unsorted':  # Stops deletion of default unsorted folder
             self.delete_folder_frame.destroy()
             return
 

@@ -2,8 +2,8 @@ import tkinter
 import customtkinter
 import webbrowser
 from colors import *
-from PIL import Image
 from item_menu import ItemMenu
+from images import CREATE_IMAGE, LAUNCH_IMAGE, ADD_IMAGE, COPY_IMAGE
 
 
 class RightButtonSidebar:
@@ -17,22 +17,12 @@ class RightButtonSidebar:
         self.button_width = 25
         self.button_height = 25
 
-        # Images
-        self.add_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\add.png"), size=(20, 20))
-        self.copy_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
-        self.create_image = customtkinter.CTkImage(
-            Image.open(r'C:\Users\xjord\Desktop\PasswordManager\images\arrows-spin-solid.png'), size=(20, 20))
-        self.launch_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\click.png"), size=(20, 20))
-
         # Add / Copy / Create / Launch Buttons
         if self.parent.name == 'Generator':
             self.copy_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
                                                             fg_color="transparent")
             self.create_or_launch_button = customtkinter.CTkButton(master=self.copy_button_frame, text='',
-                                                                   image=self.create_image, fg_color=GREEN,
+                                                                   image=CREATE_IMAGE, fg_color=GREEN,
                                                                    command=self.parent.generator_tabview_event,
                                                                    width=self.button_width, height=self.button_height)
 
@@ -40,14 +30,14 @@ class RightButtonSidebar:
             self.copy_button_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Vault'),
                                                             fg_color="transparent")
             self.create_or_launch_button = customtkinter.CTkButton(master=self.copy_button_frame, text='',
-                                                                   image=self.launch_image, fg_color=GREEN,
+                                                                   image=LAUNCH_IMAGE, fg_color=GREEN,
                                                                    command=self.launch_event, width=self.button_width,
                                                                    height=self.button_height)
 
-        self.add_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=self.add_image,
+        self.add_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=ADD_IMAGE,
                                                   fg_color=GREEN, command=self.create_add_frame,
                                                   width=self.button_width, height=self.button_height)
-        self.copy_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=self.copy_image,
+        self.copy_button = customtkinter.CTkButton(master=self.copy_button_frame, text='', image=COPY_IMAGE,
                                                    fg_color=GREEN, command=self.copy_main_textbox,
                                                    width=self.button_width, height=self.button_height)
         # Add / Copy Placement

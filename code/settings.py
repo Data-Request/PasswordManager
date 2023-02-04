@@ -4,14 +4,18 @@ import customtkinter
 MAX_HISTORY_ENTRIES = 10
 TEXTBOX_FONT = ('Prototype', 15)
 
+
 class SettingsTab:
     def __init__(self, landing_tabview, account_id):
         super().__init__()
         self.landing_tabview = landing_tabview
 
-        self.settings_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Settings'), fg_color="transparent")
-        self.appearance_mode_label = customtkinter.CTkLabel(master=self.settings_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_option_menu = customtkinter.CTkOptionMenu(self.settings_frame, values=["Light", "Dark", "System"],
+        self.settings_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Settings'),
+                                                     fg_color="transparent")
+        self.appearance_mode_label = customtkinter.CTkLabel(master=self.settings_frame, text="Appearance Mode:",
+                                                            anchor="w")
+        self.appearance_mode_option_menu = customtkinter.CTkOptionMenu(self.settings_frame,
+                                                                       values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode_event)
         self.scaling_label = customtkinter.CTkLabel(self.settings_frame, text="UI Scaling:", anchor="w")
         self.scaling_option_menu = customtkinter.CTkOptionMenu(self.settings_frame,

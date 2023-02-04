@@ -9,6 +9,7 @@ from support import create_username, encrypt_text, decrypt_text
 from settings import TEXTBOX_FONT
 from password_strength import PasswordStrength
 
+
 # todo password generate per requirements - min numbers and min specials
 # todo remove password strength is on passphrase or username tabs
 # todo change numbers shown next to sliders to be entries
@@ -160,7 +161,7 @@ class GeneratorTab:
         self.word_separator_frame = customtkinter.CTkFrame(master=self.generator_tabview.tab('Passphrase'),
                                                            fg_color='transparent')
         self.word_separator_label = customtkinter.CTkLabel(master=self.word_separator_frame, text='Word Separator:')
-        self.word_separator_entry = customtkinter.CTkEntry(master=self.word_separator_frame, width=100,)
+        self.word_separator_entry = customtkinter.CTkEntry(master=self.word_separator_frame, width=100, )
         # Word Separator Frame Placement
         self.word_separator_frame.grid(row=1, column=0, padx=(50, 0), pady=(30, 0), sticky="n")
         self.word_separator_frame.grid_columnconfigure(2, weight=1)
@@ -359,7 +360,9 @@ class GeneratorTab:
         if self.symbols_checkbox.get() == 1:
             char_list += self.valid_symbols
         if self.ambiguous_checkbox.get() == 1:
-            char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O', '').replace( '0', '')
+            char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O',
+                                                                                                              '').replace(
+                '0', '')
         return char_list
 
     def create_password(self):
@@ -372,7 +375,8 @@ class GeneratorTab:
         for index in range(0, self.password_length):
             char = secrets.choice(char_list)
             password += char
-            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols, self.password_length)
+            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols,
+                                                                        self.password_length)
         self.password_strength_frame.update_advanced_scoring_variables(self.valid_symbols, password)
         self.update_main_textbox(password)
         self.password_strength_frame.calc_password_strength_score(self.password_length)

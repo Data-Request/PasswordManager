@@ -20,7 +20,8 @@ class AccountSetup:
         self.new_account_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.new_email_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Email:", anchor="w")
-        self.new_email_input = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email", width=300)
+        self.new_email_input = customtkinter.CTkEntry(master=self.new_account_frame, placeholder_text="Email",
+                                                      width=300)
         self.new_master_password_label = customtkinter.CTkLabel(master=self.new_account_frame, text="Master Password:",
                                                                 anchor="w")
         self.new_master_password_input = customtkinter.CTkEntry(master=self.new_account_frame,
@@ -55,7 +56,7 @@ class AccountSetup:
         # Handles the segmented button event, they always send a value with command
         if args[0] == 'Create':
             self.create_new_account()
-        else:   # Back button
+        else:  # Back button
             self.destroy_all_widgets()
             self.parent.initialize_account_login()
 
@@ -78,7 +79,7 @@ class AccountSetup:
 
         salt = os.urandom(32)
         master_key = generate_master_key(salt, master_password)
-        master_password_hash = generate_master_password_hash(salt, master_password)
+        master_password_hash = generate_master_password_hash(master_password, master_key)
         create_new_user_account(email, salt, master_key, master_password_hash)
         self.destroy_all_widgets()
         self.parent.initialize_account_login()

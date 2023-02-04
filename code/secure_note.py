@@ -4,6 +4,7 @@ from colors import *
 from sql import *
 from support import get_encrypted_text, get_decrypted_note_and_name
 
+
 # todo add warning label for empty field
 # todo add limit to length on note names
 
@@ -44,7 +45,7 @@ class SecureNote:
         self.name_entry.grid(row=2, column=0, pady=(0, 20), sticky="n")
         self.note_textbox.grid(row=4, column=0, pady=(0, 25), sticky="n")
 
-        if self.note_id:    # Editing a note, so we need to reshape the frame to fill the screen
+        if self.note_id:  # Editing a note, so we need to reshape the frame to fill the screen
             self.secure_note_frame.configure(border_width=3, border_color=WHITE, corner_radius=15)
             self.title_label.grid(row=0, column=0, pady=(15, 5), padx=155, sticky="N")
             self.title_label.configure(text='Edit Secure Note')
@@ -56,10 +57,11 @@ class SecureNote:
             # Get note from db then decrypt and display
             note_row = get_single_secure_note(self.note_id)
             master_key = get_master_key_with_account_id(self.account_id)[0]
-            decrypted_note_name, decrypted_note = get_decrypted_note_and_name(master_key, note_row[0][2], note_row[0][3])
+            decrypted_note_name, decrypted_note = get_decrypted_note_and_name(master_key, note_row[0][2],
+                                                                              note_row[0][3])
             self.name_entry.insert(0, decrypted_note_name)
             self.note_textbox.insert('end', decrypted_note)
-        else:      # We are adding an item so we set default placements
+        else:  # We are adding an item so we set default placements
             self.name_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
             self.note_label.grid(row=3, column=0, sticky="w")
             self.cancel_save_button.configure(values=['Cancel', 'Save'])
@@ -125,4 +127,3 @@ class SecureNote:
             delete_secure_note(self.note_id)
         self.destroy_secure_note_frame()
         self.parent.update_secure_note_frame()
-

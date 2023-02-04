@@ -1,16 +1,16 @@
 import tkinter
 import customtkinter
 import functools
-from PIL import Image
 from colors import *
 from settings import MAX_HISTORY_ENTRIES, TEXTBOX_FONT
 from sql import get_all_from_history, delete_all_from_history, get_master_key_with_account_id
 from support import decrypt_text
 import string
+from images import DELETE_IMAGE, COPY_IMAGE
 
 
 class HistoryTab:
-    def __init__(self, landing_tabview, width, height, account_id):
+    def __init__(self, landing_tabview, width, account_id):
         super().__init__()
 
         # General Setup
@@ -23,11 +23,6 @@ class HistoryTab:
         self.copy_button_width = 25
         self.copy_button_height = 50
         self.history_textbox = [None] * MAX_HISTORY_ENTRIES
-
-        # Images
-        self.delete_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\trash"
-                                                              r"-solid.png"), size=(20, 20))
-        self.copy_image = customtkinter.CTkImage(Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\copy-icon.png"), size=(20, 20))
 
         # Initialize
         self.create_main_frame()
@@ -66,7 +61,7 @@ class HistoryTab:
                                                                    height=self.textbox_height, corner_radius=15)
             date_times = customtkinter.CTkLabel(master=history_row_frame, fg_color=DARK_GRAY, corner_radius=15,
                                                 text=history[index][2])
-            copy_buttons = customtkinter.CTkButton(master=history_row_frame, text='', image=self.copy_image,
+            copy_buttons = customtkinter.CTkButton(master=history_row_frame, text='', image=COPY_IMAGE,
                                                    fg_color=GREEN, command=functools.partial(self.copy_text, index),
                                                    width=self.copy_button_width, height=self.copy_button_height)
             # Decrypts password then applies color based on typing of each character
@@ -98,7 +93,7 @@ class HistoryTab:
                                                         text=f'Max History: {MAX_HISTORY_ENTRIES}')
         self.clear_history_button = customtkinter.CTkButton(master=self.landing_tabview.tab('History'),
                                                             text='Clear History', command=self.clear_history_event,
-                                                            fg_color=GREEN, text_color=BLACK, image=self.delete_image,
+                                                            fg_color=GREEN, text_color=BLACK, image=DELETE_IMAGE,
                                                             width=self.clear_history_width,
                                                             height=self.clear_history_height)
         self.max_entries_label.place(relx=0.25, rely=1, anchor=tkinter.S)

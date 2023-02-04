@@ -92,8 +92,3 @@ class NewFolder:
             self.create_new_folder_frame()
             self.parent.main_frame.destroy()
             self.parent.parent.update_folder_frame()
-
-
-
-
-

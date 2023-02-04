@@ -1,13 +1,13 @@
 import tkinter
 import customtkinter
-from PIL import Image
+from sql import *
 from colors import *
-from sql import get_folder_list, get_all_from_logins, update_login, create_new_login, delete_login, get_master_key_with_account_id
-from support import encrypt_text, decrypt_text
-from secure_note import SecureNote
 from new_folder import NewFolder
+from secure_note import SecureNote
+from support import encrypt_text, decrypt_text
 
 # todo add limit to fields like note name
+
 
 class ItemMenu:
     def __init__(self, landing_tabview, parent, account_id, login_id):
@@ -20,12 +20,6 @@ class ItemMenu:
         self.parent = parent
         self.textbox_width = 300
         self.textbox_height = 150
-
-        # Images
-        self.close_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\close.png"), size=(15, 15))
-        self.save_image = customtkinter.CTkImage(
-            Image.open(r"C:\Users\xjord\Desktop\PasswordManager\images\save.png"), size=(20, 20))
 
         # Initialize
         self.create_main_frame()
@@ -92,9 +86,9 @@ class ItemMenu:
         self.cancel_save_button.grid(row=11, column=0, pady=(30, 0), sticky="n")
 
         # Set Defaults
-        if self.parent.name == 'Generator':     # Coming from generator tab - password, or passphrase
+        if self.parent.name == 'Generator':  # Coming from generator tab - password, or passphrase
             self.main_label.configure(text='Add Login')
-            if self.parent.generator_tabview.get() == 'Username':    # Coming from generator tab, username
+            if self.parent.generator_tabview.get() == 'Username':  # Coming from generator tab, username
                 if self.parent.username_checkbox.get() == 1:
                     self.username_entry.insert(0, self.parent.main_textbox.get('0.0', 'end').strip())
                     self.username_entry.configure(state='disabled')
@@ -102,7 +96,7 @@ class ItemMenu:
                 self.password_textbox.insert('end', self.parent.main_textbox.get('0.0', 'end').strip())
                 self.password_textbox.configure(state='disabled')
         else:
-            if self.login_id:    # Coming from vault tab - edit item
+            if self.login_id:  # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
                 login = get_all_from_logins(self.login_id)
                 # Decrypt and insert all fields
@@ -116,7 +110,7 @@ class ItemMenu:
                 self.username_entry.insert(0, decrypted_username)
                 self.password_textbox.insert('end', decrypted_password)
                 self.cancel_save_button.configure(values=["Cancel", "Save", 'Delete'])
-            else:    # Coming from vault tab - right menu - new login
+            else:  # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
 
     def create_warning_label(self):
@@ -204,7 +198,8 @@ class ItemMenu:
         encrypted_url = encrypt_text(master_key, url)
         encrypted_username = encrypt_text(master_key, username)
         encrypted_password = encrypt_text(master_key, password)
-        create_new_login(self.account_id, encrypted_login_name, encrypted_url, encrypted_username, encrypted_password, folder)
+        create_new_login(self.account_id, encrypted_login_name, encrypted_url, encrypted_username, encrypted_password,
+                         folder)
 
         if self.parent.name == 'Generator':
             self.parent.update_history()
