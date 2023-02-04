@@ -128,22 +128,24 @@ class VaultTab:
         current_folder = self.folder_menu.get()
         folder_row = get_each_login_within_folder(self.account_id, current_folder)
 
+        master_key = get_master_key_with_account_id(self.account_id)[0]
         for index in range(len(folder_row)):
-            item_row = customtkinter.CTkFrame(master=self.row_frame, fg_color="transparent")
-            item_name_button = customtkinter.CTkButton(master=item_row, text=folder_row[index][2],
+            decrypted_login_name = decrypt_text(master_key, folder_row[index][2])
+            login_row = customtkinter.CTkFrame(master=self.row_frame, fg_color="transparent")
+            login_name_button = customtkinter.CTkButton(master=login_row, text=decrypted_login_name,
                                                        image=self.menu_image, compound='left', bg_color='transparent',
                                                        text_color=BLACK, anchor='w', width=270,
                                                        command=functools.partial(self.edit_item, folder_row[index][0]))
-            password_button = customtkinter.CTkButton(master=item_row, text='', image=self.key_image, compound='left',
+            password_button = customtkinter.CTkButton(master=login_row, text='', image=self.key_image, compound='left',
                                                       bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                       command=functools.partial(self.update_main_textbox, (folder_row[index][4]), folder_row[index][5]))
-            user_button = customtkinter.CTkButton(master=item_row, text='', image=self.user_image, compound='left',
+            user_button = customtkinter.CTkButton(master=login_row, text='', image=self.user_image, compound='left',
                                                   bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                   command=functools.partial(self.update_main_textbox, (folder_row[index][3]), folder_row[index][5]))
-            item_name_button.pack(side='left', pady=(10, 0))
+            login_name_button.pack(side='left', pady=(10, 0))
             password_button.pack(side='right', pady=(10, 0))
             user_button.pack(side='right', pady=(10, 0))
-            item_row.pack()
+            login_row.pack()
 
     def edit_item(self, item_id):
         ItemMenu(self.landing_tabview, self, self.account_id, item_id)
@@ -200,9 +202,9 @@ class VaultTab:
         # Grabs all notes from db for an account and decrypts the name to be shown, creates one row per note
         notes = get_all_from_secure_notes(self.account_id)
         for index in range(len(notes)):
-            note_name = notes[index][2]     # 2 is column count from db
-            key = notes[index][5]           # 5 is column count from db
-            decrypted_note_name = decrypt_text(key, note_name)
+            note_name = notes[index][2]
+            master_key = get_master_key_with_account_id(self.account_id)[0]
+            decrypted_note_name = decrypt_text(master_key, note_name)
             item_row = customtkinter.CTkFrame(master=self.secure_notes_row_frame, fg_color="transparent")
             note_button = customtkinter.CTkButton(master=item_row, text=decrypted_note_name,
                                                   image=self.note_image, compound='left',  bg_color='transparent',

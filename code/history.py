@@ -4,7 +4,8 @@ import functools
 from PIL import Image
 from colors import *
 from settings import MAX_HISTORY_ENTRIES, TEXTBOX_FONT
-from sql import get_all_from_history, delete_all_from_history
+from sql import get_all_from_history, delete_all_from_history, get_master_key_with_account_id
+from support import decrypt_text
 import string
 
 
@@ -35,6 +36,7 @@ class HistoryTab:
         self.create_history_row()
 
     def create_main_frame(self):
+        # Create and place main frame
         self.main_frame = tkinter.Frame(self.landing_tabview.tab('History'), bg=LIGHT_GRAY)
         canvas = tkinter.Canvas(self.main_frame, bg=LIGHT_GRAY, highlightbackground=LIGHT_GRAY, height=550, width=385)
         scrollbar = customtkinter.CTkScrollbar(self.main_frame, command=canvas.yview)
@@ -47,10 +49,12 @@ class HistoryTab:
         scrollbar.pack(side="right", fill="y")
 
     def create_history_frame(self):
+        # Create and place History textbox frame
         self.history_textbox_frame = customtkinter.CTkFrame(master=self.scrollable_frame, fg_color='transparent')
         self.history_textbox_frame.pack()
 
     def create_history_row(self):
+        # Create and place each History row
         history = get_all_from_history(self.account_id)
         history.reverse()  # We want the history tab sorted from newest to oldest
         for index in (range(len(history))):
@@ -60,18 +64,18 @@ class HistoryTab:
             self.history_textbox[index] = customtkinter.CTkTextbox(master=history_row_frame,
                                                                    width=self.textbox_width, font=TEXTBOX_FONT,
                                                                    height=self.textbox_height, corner_radius=15)
-            date_times = customtkinter.CTkLabel(master=history_row_frame, fg_color=DARK_GRAY,
-                                                            corner_radius=15, text=history[index][2])
-            copy_buttons = customtkinter.CTkButton(master=history_row_frame, text='',
-                                                               image=self.copy_image, fg_color=GREEN,
-                                                               command=functools.partial(self.copy_text, index),
-                                                               width=self.copy_button_width,
-                                                               height=self.copy_button_height)
-            # Goes through password and applies color based on typing of each character
+            date_times = customtkinter.CTkLabel(master=history_row_frame, fg_color=DARK_GRAY, corner_radius=15,
+                                                text=history[index][2])
+            copy_buttons = customtkinter.CTkButton(master=history_row_frame, text='', image=self.copy_image,
+                                                   fg_color=GREEN, command=functools.partial(self.copy_text, index),
+                                                   width=self.copy_button_width, height=self.copy_button_height)
+            # Decrypts password then applies color based on typing of each character
+            master_key = get_master_key_with_account_id(self.account_id)[0]
+            decrypted_input_password = decrypt_text(master_key, history[index][1]).decode()
             self.history_textbox[index].tag_config('letter', foreground=WHITE)
             self.history_textbox[index].tag_config('digit', foreground=GREEN)
             self.history_textbox[index].tag_config('symbol', foreground=BLUE)
-            for char in history[index][1]:
+            for char in decrypted_input_password:
                 if char in string.ascii_letters:
                     self.history_textbox[index].insert('end', char, 'letter')
                 elif char in string.digits:

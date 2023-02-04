@@ -1,34 +1,34 @@
-import hashlib
-from cryptography.fernet import Fernet
+import base64
 import secrets
 from datetime import datetime
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
-def generate_password_key(salt, password):
-    key = hashlib.pbkdf2_hmac(
-        'sha256',  # The hash digest algorithm for HMAC
-        password.encode('utf-8'),  # Convert the password to bytes
-        salt,  # Provide the salt
-        100000  # It is recommended to use at least 100,000 iterations of SHA-256
-    )
-    return key
+def generate_master_key(salt, master_password):
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=480000)
+    master_key = base64.urlsafe_b64encode(kdf.derive(master_password.encode()))
+    return master_key
 
 
-def generate_encryption_key():
-    return Fernet.generate_key()
+def generate_master_password_hash(master_password, master_key):
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=master_password.encode(), iterations=1)
+    master_password_hash = base64.urlsafe_b64encode(kdf.derive(master_key))
+    return master_password_hash
 
 
-def encrypt_text(key, text):
-    encrypter = Fernet(key)
+def encrypt_text(master_key, text):
+    encrypter = Fernet(master_key)
     return encrypter.encrypt(text.encode('utf-8'))
 
 
-def decrypt_text(key, text):
-    decrypter = Fernet(key)
+def decrypt_text(master_key, text):
+    decrypter = Fernet(master_key)
     return decrypter.decrypt(text)
 
 
-def get_encrypted_note_and_name(key, note_name, note):
+def get_encrypted_text(key, note_name, note):
     encrypted_note_name = encrypt_text(key, note_name)
     encrypted_note = encrypt_text(key, note)
     return encrypted_note_name, encrypted_note

@@ -1,8 +1,8 @@
 import tkinter
 import customtkinter
 from PIL import Image
-from support import generate_password_key
-from sql import update_last_login, get_user_account
+from support import generate_master_key, generate_master_password_hash
+from sql import update_last_login, get_user_account_with_email
 from colors import *
 
 
@@ -19,10 +19,10 @@ class AccountLogin:
         # Create and place Login Button Frame
         self.login_frame = customtkinter.CTkFrame(master=self.parent.landing_page_tabview.tab('Vault'), fg_color="transparent")
         self.warning_label = customtkinter.CTkLabel(master=self.login_frame, text='', text_color=RED)
-        self.username_label = customtkinter.CTkLabel(master=self.login_frame, text="Username:", anchor="w")
-        self.username = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Username or Email")
+        self.email_label = customtkinter.CTkLabel(master=self.login_frame, text="Email:", anchor="w")
+        self.email_entry = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Email")
         self.password_label = customtkinter.CTkLabel(master=self.login_frame, text="Master Password:", anchor="w")
-        self.password = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
+        self.password_entry = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
                                                     text='                             Log in', image=self.key_image,
                                                     compound='left', command=self.validate_log_info, anchor='w')
@@ -32,26 +32,29 @@ class AccountLogin:
         self.login_frame.grid_columnconfigure(1, weight=1)
         self.login_frame.grid_rowconfigure(6, weight=1)
         self.warning_label.grid(row=0, column=0, sticky="ew")
-        self.username_label.grid(row=2, column=0, sticky="ew")
-        self.username.grid(row=3, column=0, pady=(0, 20), sticky="ew")
-        self.password_label.grid(row=4, column=0, sticky="ew")
-        self.password.grid(row=5, column=0, pady=(0, 20), sticky="ew")
-        self.login_button.grid(row=6, column=0, pady=(0, 20), sticky="ew")
-        self.verify_label.grid(row=7, column=0, pady=(0, 20), sticky="ew")
+        self.email_label.grid(row=1, column=0, sticky="ew")
+        self.email_entry.grid(row=2, column=0, pady=(0, 20), sticky="ew")
+        self.password_label.grid(row=3, column=0, sticky="ew")
+        self.password_entry.grid(row=4, column=0, pady=(0, 20), sticky="ew")
+        self.login_button.grid(row=5, column=0, pady=(0, 20), sticky="ew")
+        self.verify_label.grid(row=6, column=0, pady=(0, 20), sticky="ew")
 
     def validate_log_info(self):
-        username = self.username.get()
-        password = self.password.get()
-        user_account = get_user_account(username)
-        if user_account is None:    # No user with entered username in db
-            self.warning_label.configure(text='Incorrect username or password.')
+        # Checks db for an account with same email
+        email_input = self.email_entry.get()
+        email_input.lower()
+        user_account = get_user_account_with_email(email_input)
+        if user_account is None:    # No user with entered email in db
+            self.warning_label.configure(text='Incorrect email or password.')
             return
-
-        current_key = generate_password_key(user_account[2], password)
-        if current_key != user_account[3]:   # Password key doesnt match key in db
-            self.warning_label.configure(text='Incorrect username or password.')
+        # Checks if password input matches hashed master password in db
+        password_input = self.password_entry.get()
+        current_password_key = generate_master_key(user_account[2], password_input)
+        current_password_hash = generate_master_password_hash(password_input, current_password_key)
+        if current_password_hash != user_account[4]:   # Password hash doesn't match hash in db
+            self.warning_label.configure(text='Incorrect email or password.')
             return
-
+        # Account is good to log in, update login timestamp in db and grab account id then destroy all widgets created
         update_last_login(user_account[0])
         self.parent.account_id = user_account[0]
         self.parent.enabled_tabview()

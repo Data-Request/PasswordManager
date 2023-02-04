@@ -5,11 +5,13 @@ import string
 from colors import *
 from right_button_sidebar import RightButtonSidebar
 from sql import *
-from support import create_username
+from support import create_username, encrypt_text, decrypt_text
 from settings import TEXTBOX_FONT
 from password_strength import PasswordStrength
 
 # todo password generate per requirements - min numbers and min specials
+# todo remove password strength is on passphrase or username tabs
+# todo change numbers shown next to sliders to be entries
 
 
 class GeneratorTab:
@@ -189,9 +191,9 @@ class GeneratorTab:
     def create_username_frame(self):
         # Create Username Checkbox Frame
         self.username_checkbox_frame = customtkinter.CTkFrame(master=self.generator_tabview.tab('Username'))
-        self.random_word_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame, text='Random word',
-                                                              command=self.random_word_clicked, width=150,
-                                                              state='disabled')
+        self.username_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame, text='Username',
+                                                           command=self.random_word_clicked, width=150,
+                                                           state='disabled')
         self.sub_address_checkbox = customtkinter.CTkCheckBox(master=self.username_checkbox_frame,
                                                               text='Email sub-address',
                                                               command=self.sub_address_clicked, width=150)
@@ -199,11 +201,11 @@ class GeneratorTab:
         self.username_checkbox_frame.grid(row=0, column=0, padx=(90, 0), pady=(40, 0), sticky='n')
         self.username_checkbox_frame.grid_columnconfigure(1, weight=1)
         self.username_checkbox_frame.grid_rowconfigure(2, weight=1)
-        self.random_word_checkbox.grid(row=0, column=0, padx=(40, 0), pady=20, sticky="n")
+        self.username_checkbox.grid(row=0, column=0, padx=(40, 0), pady=20, sticky="n")
         self.sub_address_checkbox.grid(row=1, column=0, padx=(40, 0), pady=20, sticky="n")
 
         # Set Defaults
-        self.random_word_checkbox.select()
+        self.username_checkbox.select()
 
     def check_valid_checkbox(self):
         if self.numbers_checkbox.get() == 1:
@@ -221,16 +223,16 @@ class GeneratorTab:
         self.create_password()
 
     def sub_address_clicked(self):
-        self.random_word_checkbox.deselect()
+        self.username_checkbox.deselect()
         self.create_sub_address()
-        self.random_word_checkbox.configure(state='normal')
+        self.username_checkbox.configure(state='normal')
         self.sub_address_checkbox.configure(state='disabled')
 
     def random_word_clicked(self):
         self.sub_address_checkbox.deselect()
         self.create_random_word()
         self.sub_address_checkbox.configure(state='normal')
-        self.random_word_checkbox.configure(state='disabled')
+        self.username_checkbox.configure(state='disabled')
 
     def update_length(self, *args):
         text = 'Length:'
@@ -286,7 +288,7 @@ class GeneratorTab:
         elif self.generator_tabview.get() == 'Passphrase':
             self.create_passphrase()
         else:
-            if self.random_word_checkbox.get() == 1:
+            if self.username_checkbox.get() == 1:
                 self.create_random_word()
             else:
                 self.create_sub_address()
@@ -376,19 +378,23 @@ class GeneratorTab:
         self.password_strength_frame.calc_password_strength_score(self.password_length)
 
     def update_history(self):
-        key = self.main_textbox.get('0.0', 'end').strip()
+        password = self.main_textbox.get('0.0', 'end').strip()
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        encrypted_password = encrypt_text(master_key, password)
 
         if self.generator_tabview.get() == 'Username':
             return
-        if self.check_if_already_entered(key):
+        if self.check_if_already_entered(master_key, encrypted_password):
             return
 
         delete_oldest_history_if_at_limit(self.account_id)
-        create_new_history(self.account_id, key)
+        create_new_history(self.account_id, encrypted_password)
 
-    def check_if_already_entered(self, key):
+    def check_if_already_entered(self, master_key, encrypted_password):
         history = get_all_from_history(self.account_id)
-        for item_row in history:
-            if item_row[1] == key:
+        decrypted_input_password = decrypt_text(master_key, encrypted_password)
+        for history_row in history:
+            decrypted_db_password = decrypt_text(master_key, history_row[1])
+            if decrypted_db_password == decrypted_input_password:
                 return True
         return False

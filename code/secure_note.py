@@ -2,9 +2,10 @@ import tkinter
 import customtkinter
 from colors import *
 from sql import *
-from support import generate_encryption_key, get_encrypted_note_and_name, get_decrypted_note_and_name
+from support import get_encrypted_text, get_decrypted_note_and_name
 
 # todo add warning label for empty field
+# todo add limit to length on note names
 
 
 class SecureNote:
@@ -54,7 +55,8 @@ class SecureNote:
             self.cancel_save_button.grid(row=5, column=0, pady=(0, 30), sticky="n")
             # Get note from db then decrypt and display
             note_row = get_single_secure_note(self.note_id)
-            decrypted_note_name, decrypted_note = get_decrypted_note_and_name(note_row[0][5], note_row[0][2], note_row[0][3])
+            master_key = get_master_key_with_account_id(self.account_id)[0]
+            decrypted_note_name, decrypted_note = get_decrypted_note_and_name(master_key, note_row[0][2], note_row[0][3])
             self.name_entry.insert(0, decrypted_note_name)
             self.note_textbox.insert('end', decrypted_note)
         else:      # We are adding an item so we set default placements
@@ -89,18 +91,17 @@ class SecureNote:
     def save_note(self):
         # Grabs note and encrypts then stores in db
         note_name_input = self.name_entry.get().strip()
-        note_input = self.note_textbox.get('0.0', 'end').strip()
-        key = generate_encryption_key()
-        encrypted_note_name, encrypted_note = get_encrypted_note_and_name(key, note_name_input, note_input)
-        create_new_secure_note(self.account_id, encrypted_note_name, encrypted_note, key)
+        note_body_input = self.note_textbox.get('0.0', 'end').strip()
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        encrypted_note_name, encrypted_note = get_encrypted_text(master_key, note_name_input, note_body_input)
+        create_new_secure_note(self.account_id, encrypted_note_name, encrypted_note)
 
     def edit_note(self):
-        # Grab note inputs and the key from the note row of db, then encrypt both and update note in db
+        # Grab note inputs and the master_key from db, then encrypt both and update note in db
         note_name_input = self.name_entry.get().strip()
-        note_input = self.note_textbox.get('0.0', 'end').strip()
-        note_row = get_single_secure_note(self.note_id)
-        key = note_row[0][5]
-        encrypted_note_name, encrypted_note = get_encrypted_note_and_name(key, note_name_input, note_input)
+        note_Body_input = self.note_textbox.get('0.0', 'end').strip()
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        encrypted_note_name, encrypted_note = get_encrypted_text(master_key, note_name_input, note_Body_input)
         update_secure_note(encrypted_note_name, encrypted_note, self.note_id)
 
     def create_delete_note_frame(self):

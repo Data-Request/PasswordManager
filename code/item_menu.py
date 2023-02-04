@@ -2,10 +2,12 @@ import tkinter
 import customtkinter
 from PIL import Image
 from colors import *
-from sql import get_folder_list, get_all_from_logins, update_login, create_new_login, delete_login
+from sql import get_folder_list, get_all_from_logins, update_login, create_new_login, delete_login, get_master_key_with_account_id
+from support import encrypt_text, decrypt_text
 from secure_note import SecureNote
 from new_folder import NewFolder
 
+# todo add limit to fields like note name
 
 class ItemMenu:
     def __init__(self, landing_tabview, parent, account_id, login_id):
@@ -58,9 +60,9 @@ class ItemMenu:
         self.login_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
         self.login_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
                                                        placeholder_text='Website Name')
-        self.website_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
-        self.website_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
-                                                    placeholder_text='URL')
+        self.url_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
+        self.url_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
+                                                placeholder_text='URL')
         self.username_label = customtkinter.CTkLabel(master=self.options_frame, text="Username:")
         self.username_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
                                                      placeholder_text='Username')
@@ -81,8 +83,8 @@ class ItemMenu:
         self.folder_menu.grid(row=2, column=0, pady=(0, 20), sticky="w")
         self.login_name_label.grid(row=3, column=0, sticky="w")
         self.login_name_entry.grid(row=4, column=0, pady=(0, 10), sticky="n")
-        self.website_label.grid(row=5, column=0, sticky="w")
-        self.website_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
+        self.url_label.grid(row=5, column=0, sticky="w")
+        self.url_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
         self.username_label.grid(row=7, column=0, sticky="w")
         self.username_entry.grid(row=8, column=0, pady=(0, 10), sticky="n")
         self.password_label.grid(row=9, column=0, sticky="w")
@@ -93,7 +95,7 @@ class ItemMenu:
         if self.parent.name == 'Generator':     # Coming from generator tab - password, or passphrase
             self.main_label.configure(text='Add Login')
             if self.parent.generator_tabview.get() == 'Username':    # Coming from generator tab, username
-                if self.parent.random_word_checkbox.get() == 1:
+                if self.parent.username_checkbox.get() == 1:
                     self.username_entry.insert(0, self.parent.main_textbox.get('0.0', 'end').strip())
                     self.username_entry.configure(state='disabled')
             else:
@@ -103,10 +105,16 @@ class ItemMenu:
             if self.login_id:    # Coming from vault tab - edit item
                 self.main_label.configure(text='Edit Login')
                 login = get_all_from_logins(self.login_id)
-                self.login_name_entry.insert(0, login[0][2])
-                self.username_entry.insert(0, login[0][3])
-                self.password_textbox.insert('end', login[0][4])
-                self.website_entry.insert(0, login[0][5])
+                # Decrypt and insert all fields
+                master_key = get_master_key_with_account_id(self.account_id)[0]
+                decrypted_login_name = decrypt_text(master_key, login[0][2])
+                decrypted_url = decrypt_text(master_key, login[0][3])
+                decrypted_username = decrypt_text(master_key, login[0][4])
+                decrypted_password = decrypt_text(master_key, login[0][5])
+                self.login_name_entry.insert(0, decrypted_login_name)
+                self.url_entry.insert(0, decrypted_url)
+                self.username_entry.insert(0, decrypted_username)
+                self.password_textbox.insert('end', decrypted_password)
                 self.cancel_save_button.configure(values=["Cancel", "Save", 'Delete'])
             else:    # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
@@ -161,19 +169,25 @@ class ItemMenu:
         login_name = self.login_name_entry.get().strip()
         username = self.username_entry.get().strip()
         key = self.password_textbox.get('0.0', 'end').strip()
-        url = self.website_entry.get().strip()
+        url = self.url_entry.get().strip()
         folder = self.folder_menu.get()
         return login_name, username, key, url, folder
 
     def edit_login(self):
         self.warning_label.configure(text='')
-        login_name, username, key, url, folder = self.get_all_login_fields()
-        update_login(login_name, username, key, url, folder, self.login_id)
+        login_name, url, username, password, folder = self.get_all_login_fields()
+
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        encrypted_login_name = encrypt_text(master_key, login_name)
+        encrypted_url = encrypt_text(master_key, url)
+        encrypted_username = encrypt_text(master_key, username)
+        encrypted_password = encrypt_text(master_key, password)
+        update_login(encrypted_login_name, encrypted_url, encrypted_username, encrypted_password, folder, self.login_id)
         self.parent.update_folder_frame()
 
     def save_login(self):
         self.warning_label.configure(text='')
-        login_name, username, key, url, folder = self.get_all_login_fields()
+        login_name, username, password, url, folder = self.get_all_login_fields()
 
         if login_name == '':
             self.warning_label.configure(text='Website Name is blank.')
@@ -185,7 +199,12 @@ class ItemMenu:
             self.warning_label.configure(text='Username is blank.')
             return
 
-        create_new_login(self.account_id, login_name, username, key, url, folder)
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        encrypted_login_name = encrypt_text(master_key, login_name)
+        encrypted_url = encrypt_text(master_key, url)
+        encrypted_username = encrypt_text(master_key, username)
+        encrypted_password = encrypt_text(master_key, password)
+        create_new_login(self.account_id, encrypted_login_name, encrypted_url, encrypted_username, encrypted_password, folder)
 
         if self.parent.name == 'Generator':
             self.parent.update_history()
