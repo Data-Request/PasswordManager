@@ -7,7 +7,7 @@ to create a modern UI.
 ### Vault
 <p align="center">
   <picture>
-    <img src=".documentation_images/vault.png">
+    <img src="/documentation_images/vault.png">
   </picture>
 </p>
 
