@@ -1,5 +1,6 @@
 import base64
 import secrets
+import string
 from datetime import datetime
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -58,3 +59,11 @@ def create_username():
 def get_timestamp():
     now = datetime.now()
     return now.strftime("%c")
+
+
+def create_valid_chars_dict(valid_symbols):
+    all_valid_chars = f'{string.ascii_letters}{string.digits}{valid_symbols}'
+    valid_chars_dict = {}
+    for char in range(len(all_valid_chars)):
+        valid_chars_dict[all_valid_chars[char]] = 0
+    return valid_chars_dict

@@ -1,11 +1,10 @@
+import string
 import tkinter
 import customtkinter
-import string
 from colors import *
-
+from support import create_valid_chars_dict
 
 # todo fix repeated characters scoring need a better way to calculate
-# todo fix consecutive numbers calc
 
 
 class PasswordStrength:
@@ -16,30 +15,12 @@ class PasswordStrength:
         self.parent = parent
         self.landing_tabview = landing_tabview
 
-        # Password Variables
-        self.num_of_uppercase_chars = 0
-        self.num_of_lowercase_chars = 0
-        self.num_of_num_chars = 0
-        self.num_of_symbol_chars = 0
-        self.num_or_symbol_used_in_middle = 0
-        self.repeat_char = 0
-        self.consecutive_uppercase = 0
-        self.consecutive_lowercase = 0
-        self.consecutive_numbers = 0
-        self.sequential_letters = 0
-        self.sequential_numbers = 0
-        self.sequential_symbols = 0
-        self.all_scores = {'num_of_char_score': 0, 'num_of_uppercase_chars': 0, 'num_of_lowercase_chars': 0,
-                           'num_of_num_chars': 0, 'num_of_symbol_chars': 0, 'num_or_symbol_used_in_middle': 0,
-                           'requirements_score': 0, 'only_letter_score': 0, 'only_numbers_score': 0,
-                           'only_symbol_score': 0, 'repeat_char_score': 0, 'consec_uppercase_score': 0,
-                           'consec_lowercase_score': 0, 'consec_number_score': 0, 'sequen_letter_score': 0,
-                           'sequen_number_score': 0, 'sequen_symbols_score': 0}
-
         # Initialize
+        self.reset_scoring_variables()
         self.create_generator_password_strength_frame()
 
     def create_generator_password_strength_frame(self):
+        # Create and place Password strength frame
         if self.parent.name == 'Generator':
             self.password_strength_frame = customtkinter.CTkFrame(master=self.landing_tabview.tab('Generator'),
                                                                   fg_color="transparent")
@@ -48,7 +29,6 @@ class PasswordStrength:
                                                                   fg_color="transparent")
         self.strength_label = customtkinter.CTkLabel(master=self.password_strength_frame, text="Password Strength:")
         self.strength_bar = customtkinter.CTkProgressBar(self.password_strength_frame, width=350, height=20)
-        # Password Strength Placement
         self.password_strength_frame.place(relx=0.5, rely=1, anchor=tkinter.S)
         self.password_strength_frame.grid_columnconfigure(0, weight=1)
         self.password_strength_frame.grid_rowconfigure(2, weight=1)
@@ -64,7 +44,7 @@ class PasswordStrength:
         self.consecutive_uppercase = 0
         self.consecutive_lowercase = 0
         self.consecutive_numbers = 0
-        self.repeat_char = 0
+        self.repeated_characters = 0
         self.sequential_letters = 0
         self.sequential_numbers = 0
         self.sequential_symbols = 0
@@ -72,26 +52,29 @@ class PasswordStrength:
                            'num_of_num_chars': 0, 'num_of_symbol_chars': 0, 'num_or_symbol_used_in_middle': 0,
                            'requirements_score': 0, 'only_letter_score': 0, 'only_numbers_score': 0,
                            'only_symbol_score': 0, 'repeat_char_score': 0, 'consec_uppercase_score': 0,
-                           'consec_lowercase_score': 0, 'consec_number_score': 0, 'sequen_letter_score': 0,
-                           'sequen_number_score': 0, 'sequen_symbols_score': 0}
+                           'consec_lowercase_score': 0, 'consec_numbers_score': 0, 'sequen_letter_score': 0,
+                           'sequen_numbers_score': 0, 'sequen_symbols_score': 0}
 
-    def update_basic_scoring_variables(self, index, char, valid_symbols, password_length):
-        if char in string.ascii_lowercase:
-            self.num_of_lowercase_chars += 1
-        elif char in string.ascii_uppercase:
-            self.num_of_uppercase_chars += 1
-        elif char in string.digits:
-            self.num_of_num_chars += 1
-        elif char in valid_symbols:
-            self.num_of_symbol_chars += 1
-
-        if index != 0 and index != (password_length - 1):
-            if char in string.digits or char in valid_symbols:
-                self.num_or_symbol_used_in_middle += 1
-
-    def update_advanced_scoring_variables(self, valid_symbols, password):
+    def update_scoring_variables(self, valid_symbols, password):
         current_string = ''
+        valid_chars = create_valid_chars_dict(valid_symbols)
+
         for char in range(len(password)):
+            # Count usage of each character type
+            if password[char] in string.ascii_lowercase:
+                self.num_of_lowercase_chars += 1
+            elif password[char] in string.ascii_uppercase:
+                self.num_of_uppercase_chars += 1
+            elif password[char] in string.digits:
+                self.num_of_num_chars += 1
+            elif password[char] in valid_symbols:
+                self.num_of_symbol_chars += 1
+
+            # Count usage of numbers and symbols not at the start or end of the password
+            if char != 0 and char != (len(password) - 1):
+                if password[char] in string.digits or password[char] in valid_symbols:
+                    self.num_or_symbol_used_in_middle += 1
+
             # Consecutive Uppercase/Lowercase/Numbers
             if char < len(password) - 1:
                 if password[char] in string.ascii_uppercase:
@@ -104,10 +87,9 @@ class PasswordStrength:
                     if password[char + 1] in string.digits:
                         self.consecutive_numbers += 1
 
-            # Looks for repeated chars
-            for char_b in range(len(password)):
-                if password[char] == password[char_b] and char != char_b:
-                    self.repeat_char += 1
+            # Counts repeated chars
+            count = valid_chars[password[char]]
+            valid_chars[password[char]] = count + 1
 
             # Sequential Numbers Letters
             current_string += password[char]
@@ -128,10 +110,19 @@ class PasswordStrength:
             else:
                 current_string = current_string[len(current_string) - 3:]
 
+        # Loop through all valid chars getting the num of time used
+        for index in valid_chars:
+            if valid_chars[index] > 5:
+                self.repeated_characters += valid_chars[index]
+
+
     def calc_password_strength_score(self, password_length):
         # Positive Scores
-        requirements_meet = 0
+        # Password Length
         self.all_scores.update({'num_of_char_score': (password_length * 4)})
+
+        # Password requirements
+        requirements_meet = 0
         if self.num_of_uppercase_chars > 0:
             requirements_meet += 1
             self.all_scores.update({'num_of_uppercase_chars': (password_length - self.num_of_uppercase_chars) * 2})
@@ -148,13 +139,16 @@ class PasswordStrength:
             requirements_meet += 1
         self.all_scores.update({'requirements_score': (requirements_meet * 2)})
 
+        # Numbers and symbols not at the start or end of the password
         if self.num_or_symbol_used_in_middle > 0:
             self.all_scores.update({'num_or_symbol_used_in_middle': (self.num_or_symbol_used_in_middle * 2)})
 
         # Negative Scores
-        # self.all_scores.update({'repeat_char_score': self.repeat_char * -1})
-        if (
-                self.num_of_uppercase_chars > 0 or self.num_of_lowercase_chars > 0) and self.num_of_num_chars == 0 and self.num_of_symbol_chars == 0:
+        # Repeated Characters
+        self.all_scores.update({'repeat_char_score': self.repeated_characters * -1})
+
+        # Mono-typed password
+        if (self.num_of_uppercase_chars > 0 or self.num_of_lowercase_chars > 0) and self.num_of_num_chars == 0 and self.num_of_symbol_chars == 0:
             self.all_scores.update(
                 {'only_letter_score': (self.num_of_uppercase_chars + self.num_of_lowercase_chars) * -1})
         elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars > 0 and self.num_of_symbol_chars == 0:
@@ -162,6 +156,7 @@ class PasswordStrength:
         elif self.num_of_uppercase_chars == 0 and self.num_of_lowercase_chars == 0 and self.num_of_num_chars == 0 and self.num_of_symbol_chars > 0:
             self.all_scores.update({'only_symbol_score': self.num_of_symbol_chars * -1})
 
+        # Consecutive typing
         if self.consecutive_uppercase != 0:
             self.all_scores.update({'consec_uppercase_score': (self.consecutive_uppercase * -2)})
         if self.consecutive_lowercase != 0:
@@ -169,10 +164,11 @@ class PasswordStrength:
         if self.consecutive_numbers != 0:
             self.all_scores.update({'consec_numbers_score': (self.consecutive_numbers * -2)})
 
+        # Sequential typing
         if self.sequential_letters != 0:
             self.all_scores.update({'sequen_letter_score': (self.sequential_letters * -3)})
         elif self.sequential_numbers != 0:
-            self.all_scores.update({'sequen_number_score': (self.sequential_numbers * -3)})
+            self.all_scores.update({'sequen_numbers_score': (self.sequential_numbers * -3)})
         elif self.sequential_symbols != 0:
             self.all_scores.update({'sequen_symbols_score': (self.sequential_symbols * -3)})
 

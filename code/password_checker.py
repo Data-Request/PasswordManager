@@ -1,8 +1,8 @@
 import tkinter
 import customtkinter
+from colors import *
 from settings import TEXTBOX_FONT
 from password_strength import PasswordStrength
-from colors import *
 
 
 class PasswordCheckerTab:
@@ -223,11 +223,11 @@ class PasswordCheckerTab:
         self.consec_lowercase_entry.insert(0, self.all_score['consec_lowercase_score'])
         if self.all_score['consec_lowercase_score'] < 0:
             self.consec_lowercase_entry.configure(fg_color=RED, text_color=BLACK)
-        self.consec_numbers_entry.insert(0, self.all_score['consec_number_score'])
-        if self.all_score['consec_number_score'] < 0:
+        self.consec_numbers_entry.insert(0, self.all_score['consec_numbers_score'])
+        if self.all_score['consec_numbers_score'] < 0:
             self.consec_numbers_entry.configure(fg_color=RED, text_color=BLACK)
-        self.sequen_numbers_entry.insert(0, self.all_score['sequen_number_score'])
-        if self.all_score['sequen_number_score'] < 0:
+        self.sequen_numbers_entry.insert(0, self.all_score['sequen_numbers_score'])
+        if self.all_score['sequen_numbers_score'] < 0:
             self.sequen_numbers_entry.configure(fg_color=RED, text_color=BLACK)
         self.sequen_symbols_entry.insert(0, self.all_score['sequen_symbols_score'])
         if self.all_score['sequen_symbols_score'] < 0:
@@ -252,10 +252,7 @@ class PasswordCheckerTab:
         password = self.main_textbox.get('0.0', 'end').strip()
         password_length = len(password)
         self.password_strength_frame.reset_scoring_variables()
-        for index, char in enumerate(password):
-            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols,
-                                                                        password_length)
-        self.password_strength_frame.update_advanced_scoring_variables(self.valid_symbols, password)
+        self.password_strength_frame.update_scoring_variables(self.valid_symbols, password)
         self.password_strength_frame.calc_password_strength_score(password_length)
         self.refresh_addition_subtraction_frames()
         self.update_all_fields()

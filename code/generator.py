@@ -9,8 +9,6 @@ from support import create_username, encrypt_text, decrypt_text
 from settings import TEXTBOX_FONT
 from password_strength import PasswordStrength
 
-# todo password generate per requirements - min numbers and min specials
-
 
 class GeneratorTab:
     def __init__(self, landing_tabview, width, height, account_id):
@@ -32,8 +30,8 @@ class GeneratorTab:
         self.max_password_length = 128
         self.password_length = 32
         self.valid_symbols = "!@#$%^&*"
-        self.default_min_number = 1
-        self.default_min_symbol = 1
+        self.default_min_number = 3
+        self.default_min_symbol = 3
         self.min_min_num = 0
         self.max_min_num = self.password_length // 10
         self.min_symbols_num = 0
@@ -368,16 +366,43 @@ class GeneratorTab:
     def create_password(self):
         self.password_length = int(self.length_slider.get())
         char_list = self.create_required_char_list()
-        password = ''
         min_num = self.min_numbers_slider.get()
-        min_special = self.min_symbol_slider.get()
+        min_symbol = self.min_symbol_slider.get()
         self.password_strength_frame.reset_scoring_variables()
-        for index in range(0, self.password_length):
-            char = secrets.choice(char_list)
-            password += char
-            self.password_strength_frame.update_basic_scoring_variables(index, char, self.valid_symbols,
-                                                                        self.password_length)
-        self.password_strength_frame.update_advanced_scoring_variables(self.valid_symbols, password)
+
+        # If not using numbers or symbols then create basic password
+        if self.numbers_checkbox.get() == 0 and self.symbols_checkbox.get() == 0:
+            password = ''
+            for index in range(0, self.password_length):
+                char = secrets.choice(char_list)
+                password += char
+        else:       # Enforce min num of number and symbols required
+            requirements_meet = False
+            while requirements_meet is False:
+                nums_used = 0
+                symbols_used = 0
+                password = ''
+                for index in range(0, self.password_length):
+                    char = secrets.choice(char_list)
+                    password += char
+                    if char in string.digits:
+                        nums_used += 1
+                    elif char in self.valid_symbols:
+                        symbols_used += 1
+
+                # Check which password requirements need meet
+                if self.numbers_checkbox.get() == 1 and self.symbols_checkbox.get() == 1:
+                    if nums_used >= min_num and symbols_used >= min_symbol:
+                        requirements_meet = True
+                elif self.numbers_checkbox.get() == 1:
+                    if nums_used >= min_num:
+                        requirements_meet = True
+                elif self.symbols_checkbox.get() == 1:
+                    if symbols_used >= min_symbol:
+                        requirements_meet = True
+
+        # Update scoring variables, main textbox, and strength frame
+        self.password_strength_frame.update_scoring_variables(self.valid_symbols, password)
         self.update_main_textbox(password)
         self.password_strength_frame.calc_password_strength_score(self.password_length)
 
