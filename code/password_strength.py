@@ -4,9 +4,6 @@ import customtkinter
 from colors import *
 from support import create_valid_chars_dict
 
-# todo fix repeated characters scoring need a better way to calculate
-
-
 class PasswordStrength:
     def __init__(self, landing_tabview, parent):
         super().__init__()
@@ -113,7 +110,7 @@ class PasswordStrength:
         # Loop through all valid chars getting the num of time used
         for index in valid_chars:
             if valid_chars[index] > 5:
-                self.repeated_characters += valid_chars[index]
+                self.repeated_characters += int(valid_chars[index] * 0.5)
 
 
     def calc_password_strength_score(self, password_length):

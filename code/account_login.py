@@ -1,9 +1,9 @@
 import tkinter
 import customtkinter
-from support import generate_master_key, generate_master_password_hash
-from sql import update_last_login, get_user_account_with_email
 from colors import *
 from images import KEY_IMAGE
+from sql import update_last_login, get_user_account_with_email
+from support import generate_master_key, generate_master_password_hash
 
 
 class AccountLogin:

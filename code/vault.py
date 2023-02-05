@@ -134,13 +134,13 @@ class VaultTab:
             password_button = customtkinter.CTkButton(master=login_row, text='', image=KEY_IMAGE, compound='left',
                                                       bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                       command=functools.partial(self.update_main_textbox,
-                                                                                (folder_row[index][4]),
-                                                                                folder_row[index][5]))
+                                                                                (folder_row[index][5]),
+                                                                                folder_row[index][3]))
             user_button = customtkinter.CTkButton(master=login_row, text='', image=USER_IMAGE, compound='left',
                                                   bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                   command=functools.partial(self.update_main_textbox,
-                                                                            (folder_row[index][3]),
-                                                                            folder_row[index][5]))
+                                                                            (folder_row[index][4]),
+                                                                            folder_row[index][3]))
             login_name_button.pack(side='left', pady=(10, 0))
             password_button.pack(side='right', pady=(10, 0))
             user_button.pack(side='right', pady=(10, 0))
@@ -150,13 +150,17 @@ class VaultTab:
         ItemMenu(self.landing_tabview, self, self.account_id, item_id)
 
     def update_main_textbox(self, text, website):
-        self.website = website
+        # Updates text with either username, or password that it grabs from db and decrypts
+        master_key = get_master_key_with_account_id(self.account_id)[0]
+        decrypted_text = decrypt_text(master_key, text)
+        website = decrypt_text(master_key, website)
+        self.website = website.decode()
         self.main_textbox.configure(state='normal')
         self.main_textbox.delete('1.0', 'end')
         self.main_textbox.tag_config('letter', foreground=WHITE)
         self.main_textbox.tag_config('digit', foreground=GREEN)
         self.main_textbox.tag_config('symbol', foreground=BLUE)
-        for char in text:
+        for char in decrypted_text.decode():
             if char in string.ascii_letters:
                 self.main_textbox.insert('end', char, 'letter')
             elif char in string.digits:
@@ -166,6 +170,7 @@ class VaultTab:
         self.main_textbox.configure(state='disabled')
 
     def create_secure_notes_frame(self):
+        # Create and place secure note frame
         note_container = tkinter.Frame(self.vault_tabview.tab('Secure Notes'), bg=MID_DARK_GRAY2)
         note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380,
                                      width=355)
@@ -215,6 +220,7 @@ class VaultTab:
             item_row.pack()
 
     def edit_note(self, note_id):
+        # Initialises the secure note class
         SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
 
     def delete_folder(self, *args):
@@ -246,6 +252,7 @@ class VaultTab:
         self.delete_folder_frame.destroy()
 
     def create_delete_folder_frame(self):
+        # Create and place delete note confirmation frame
         self.delete_folder_frame = customtkinter.CTkFrame(self.vault_tabview.tab('Login'), fg_color=GREEN)
         delete_label = customtkinter.CTkLabel(master=self.delete_folder_frame, text_color=BLACK,
                                               text=f'Confirm Deletion of Folder?', font=('Arial', 18))
