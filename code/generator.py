@@ -9,10 +9,7 @@ from support import create_username, encrypt_text, decrypt_text
 from settings import TEXTBOX_FONT
 from password_strength import PasswordStrength
 
-
 # todo password generate per requirements - min numbers and min specials
-# todo remove password strength is on passphrase or username tabs
-# todo change numbers shown next to sliders to be entries
 
 
 class GeneratorTab:
@@ -231,7 +228,7 @@ class GeneratorTab:
 
     def random_word_clicked(self):
         self.sub_address_checkbox.deselect()
-        self.create_random_word()
+        self.create_username()
         self.sub_address_checkbox.configure(state='normal')
         self.username_checkbox.configure(state='disabled')
 
@@ -286,11 +283,14 @@ class GeneratorTab:
     def generator_tabview_event(self):
         if self.generator_tabview.get() == 'Password':
             self.create_password()
+            self.password_strength_frame.strength_label.configure(text='Password Strength:')
         elif self.generator_tabview.get() == 'Passphrase':
             self.create_passphrase()
+            self.password_strength_frame.strength_label.configure(text='')
         else:
+            self.password_strength_frame.strength_label.configure(text='')
             if self.username_checkbox.get() == 1:
-                self.create_random_word()
+                self.create_username()
             else:
                 self.create_sub_address()
 
@@ -335,7 +335,7 @@ class GeneratorTab:
 
         self.update_main_textbox(current_passphrase)
 
-    def create_random_word(self):
+    def create_username(self):
         self.update_main_textbox(create_username())
 
     def create_sub_address(self):

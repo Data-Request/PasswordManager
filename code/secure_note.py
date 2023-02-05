@@ -1,12 +1,8 @@
 import tkinter
 import customtkinter
-from colors import *
 from sql import *
+from colors import *
 from support import get_encrypted_text, get_decrypted_note_and_name
-
-
-# todo add warning label for empty field
-# todo add limit to length on note names
 
 
 class SecureNote:
@@ -18,8 +14,10 @@ class SecureNote:
         self.parent_frame = parent_frame
         self.parent = parent
         self.note_id = note_id
+        self.note_name_character_limit = 30
         self.textbox_width = 300
-        self.note_textbox_height = 250
+        self.new_note_textbox_height = 250
+        self.edit_note_textbox_height = 350
 
         # Initialize
         self.create_secure_note_frame()
@@ -34,7 +32,7 @@ class SecureNote:
         self.note_label = customtkinter.CTkLabel(master=self.secure_note_frame, text="Secure Note:")
         self.note_textbox = customtkinter.CTkTextbox(master=self.secure_note_frame,
                                                      width=self.textbox_width, font=('Arial', 14),
-                                                     height=self.note_textbox_height)
+                                                     height=self.new_note_textbox_height)
         self.cancel_save_button = customtkinter.CTkSegmentedButton(master=self.secure_note_frame, text_color=BLACK,
                                                                    width=300, unselected_color=GREEN,
                                                                    unselected_hover_color=DARK_GREEN,
@@ -51,7 +49,7 @@ class SecureNote:
             self.title_label.configure(text='Edit Secure Note')
             self.name_label.grid(row=1, column=0, pady=(15, 5), padx=(55, 0), sticky="w")
             self.note_label.grid(row=3, column=0, padx=(55, 0), sticky="w")
-            self.note_textbox.configure(height=self.note_textbox_height + 80)
+            self.note_textbox.configure(height=self.edit_note_textbox_height)
             self.cancel_save_button.configure(values=['Cancel', 'Save', 'Delete'])
             self.cancel_save_button.grid(row=5, column=0, pady=(0, 30), sticky="n")
             # Get note from db then decrypt and display
@@ -76,12 +74,8 @@ class SecureNote:
         if args[0] == 'Save':
             if not self.note_id:
                 self.save_note()
-                self.parent.main_frame.destroy()
-                self.parent.parent.update_secure_note_frame()
             else:
                 self.edit_note()
-                self.destroy_secure_note_frame()
-                self.parent.update_secure_note_frame()
         elif args[0] == 'Cancel':
             if self.note_id:
                 self.destroy_secure_note_frame()
@@ -94,17 +88,55 @@ class SecureNote:
         # Grabs note and encrypts then stores in db
         note_name_input = self.name_entry.get().strip()
         note_body_input = self.note_textbox.get('0.0', 'end').strip()
+        if self.check_invalid_input(note_name_input, note_body_input):
+            return
         master_key = get_master_key_with_account_id(self.account_id)[0]
         encrypted_note_name, encrypted_note = get_encrypted_text(master_key, note_name_input, note_body_input)
         create_new_secure_note(self.account_id, encrypted_note_name, encrypted_note)
+        self.parent.main_frame.destroy()
+        self.parent.parent.update_secure_note_frame()
 
     def edit_note(self):
         # Grab note inputs and the master_key from db, then encrypt both and update note in db
         note_name_input = self.name_entry.get().strip()
-        note_Body_input = self.note_textbox.get('0.0', 'end').strip()
+        note_body_input = self.note_textbox.get('0.0', 'end').strip()
+        if self.check_invalid_input(note_name_input, note_body_input):
+            return
         master_key = get_master_key_with_account_id(self.account_id)[0]
-        encrypted_note_name, encrypted_note = get_encrypted_text(master_key, note_name_input, note_Body_input)
+        encrypted_note_name, encrypted_note = get_encrypted_text(master_key, note_name_input, note_body_input)
         update_secure_note(encrypted_note_name, encrypted_note, self.note_id)
+        self.destroy_secure_note_frame()
+        self.parent.update_secure_note_frame()
+
+    def check_invalid_input(self, note_name, note_body):
+        # Checks for invalid inputs from user
+        self.name_label.configure(text='Name:')
+        self.note_label.configure(text='Secure Note:')
+        self.name_entry.configure(text_color=WHITE)
+        invalid_entry = False
+        if note_name == '':
+            self.refresh_and_insert_all_fields(note_name, note_body)
+            self.name_label.configure(text='Name:                 Name is blank.')
+            invalid_entry = True
+        elif note_body == '':
+            self.refresh_and_insert_all_fields(note_name, note_body)
+            self.note_label.configure(text='Secure Note:          Secure Note is blank.')
+            invalid_entry = True
+        elif len(note_name) > self.note_name_character_limit:
+            self.refresh_and_insert_all_fields(note_name, note_body)
+            self.name_label.configure(text='Name:                 Name entered too long.')
+            self.name_entry.configure(text_color=RED)
+            invalid_entry = True
+        return invalid_entry
+
+    def refresh_and_insert_all_fields(self, note_name, note_body):
+        # Refresh the page so the buttons gets updated info, inserts all input back into fields for user
+        self.destroy_secure_note_frame()
+        self.create_secure_note_frame()
+        self.name_entry.delete(0, 'end')
+        self.name_entry.insert('end', note_name)
+        self.note_textbox.delete('1.0', 'end')
+        self.note_textbox.insert('end', note_body)
 
     def create_delete_note_frame(self):
         # Create and place delete note frame
