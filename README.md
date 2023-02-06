@@ -1,4 +1,4 @@
-# Password Manger
+# Password Manager
 
 Personal project, aimed to build a fully functional Password Manager that stores data in a database using 
 [sqlite3](https://docs.python.org/3/library/sqlite3.html), and 
