@@ -56,9 +56,10 @@ class RightButtonSidebar:
     def create_add_frame(self):
         # Last parameter is blank as we only need it if calling from outside this class
         # such as calling item from within the vault tab by clicking an item name to edit the item
-        ItemMenu(self.landing_tabview, self.parent, self.account_id, '')
+        self.item_menu = ItemMenu(self.landing_tabview, self.parent, self.account_id, '')
 
     def launch_event(self):
-        browser = webbrowser.get()
-        website = f"https://{self.parent.website}"
-        browser.open_new_tab(website)
+        if self.parent.website != '':
+            browser = webbrowser.get()
+            website = f"https://{self.parent.website}"
+            browser.open_new_tab(website)

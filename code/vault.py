@@ -130,23 +130,24 @@ class VaultTab:
             login_name_button = customtkinter.CTkButton(master=login_row, text=decrypted_login_name,
                                                         image=MENU_IMAGE, compound='left', bg_color='transparent',
                                                         text_color=BLACK, anchor='w', width=270,
-                                                        command=functools.partial(self.edit_item, folder_row[index][0]))
+                                                        command=functools.partial(self.edit_item_event, folder_row[index][0]))
             password_button = customtkinter.CTkButton(master=login_row, text='', image=KEY_IMAGE, compound='left',
                                                       bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                       command=functools.partial(self.update_main_textbox,
-                                                                                (folder_row[index][5]),
+                                                                                (folder_row[index][4]),
                                                                                 folder_row[index][3]))
             user_button = customtkinter.CTkButton(master=login_row, text='', image=USER_IMAGE, compound='left',
                                                   bg_color='transparent', text_color=BLACK, anchor='w', width=25,
                                                   command=functools.partial(self.update_main_textbox,
-                                                                            (folder_row[index][4]),
+                                                                            (folder_row[index][5]),
                                                                             folder_row[index][3]))
             login_name_button.pack(side='left', pady=(10, 0))
             password_button.pack(side='right', pady=(10, 0))
             user_button.pack(side='right', pady=(10, 0))
             login_row.pack()
 
-    def edit_item(self, item_id):
+    def edit_item_event(self, item_id):
+        # Initialises the item menu class
         ItemMenu(self.landing_tabview, self, self.account_id, item_id)
 
     def update_main_textbox(self, text, website):
@@ -172,7 +173,7 @@ class VaultTab:
     def create_secure_notes_frame(self):
         # Create and place secure note frame
         note_container = tkinter.Frame(self.vault_tabview.tab('Secure Notes'), bg=MID_DARK_GRAY2)
-        note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=380,
+        note_canvas = tkinter.Canvas(note_container, bg=MID_DARK_GRAY2, highlightbackground=MID_DARK_GRAY2, height=387,
                                      width=355)
         note_scrollbar = customtkinter.CTkScrollbar(note_container, command=note_canvas.yview)
         self.note_scrollable_frame = tkinter.Frame(note_canvas, bg=MID_DARK_GRAY2)
@@ -215,11 +216,11 @@ class VaultTab:
             note_button = customtkinter.CTkButton(master=item_row, text=decrypted_note_name,
                                                   image=NOTE_IMAGE, compound='left', bg_color='transparent',
                                                   text_color=BLACK, anchor='w', width=350, corner_radius=15,
-                                                  command=functools.partial(self.edit_note, (notes[index][0])))
+                                                  command=functools.partial(self.edit_note_event, (notes[index][0])))
             note_button.pack(pady=(20, 0))
             item_row.pack()
 
-    def edit_note(self, note_id):
+    def edit_note_event(self, note_id):
         # Initialises the secure note class
         SecureNote(self.landing_tabview.tab('Vault'), self, self.account_id, note_id)
 

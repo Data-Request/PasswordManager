@@ -1,12 +1,12 @@
+import string
 import tkinter
-import customtkinter
 import functools
+import customtkinter
 from colors import *
+from support import decrypt_text
+from images import DELETE_IMAGE, COPY_IMAGE
 from settings import MAX_HISTORY_ENTRIES, TEXTBOX_FONT
 from sql import get_all_from_history, delete_all_from_history, get_master_key_with_account_id
-from support import decrypt_text
-import string
-from images import DELETE_IMAGE, COPY_IMAGE
 
 
 class HistoryTab:
@@ -99,11 +99,6 @@ class HistoryTab:
         self.max_entries_label.place(relx=0.25, rely=1, anchor=tkinter.S)
         self.clear_history_button.place(relx=0.7, rely=1, anchor=tkinter.S)
 
-    def refresh_history_tab(self):
-        self.history_textbox_frame.destroy()
-        self.create_history_frame()
-        self.create_history_row()
-
     def clear_history_event(self):
         delete_all_from_history(self.account_id)
         self.main_frame.destroy()
@@ -111,4 +106,6 @@ class HistoryTab:
         self.max_entries_label.destroy()
         self.clear_history_button.destroy()
         self.create_bottom_frame()
-        self.refresh_history_tab()
+        self.history_textbox_frame.destroy()
+        self.create_history_frame()
+        self.create_history_row()

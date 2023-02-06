@@ -47,10 +47,10 @@ class NewFolder:
         # This is called from parent to kill child
         self.new_folder_frame.destroy()
 
-    def cancel_save_delete_event(self, *args):
+    def cancel_save_delete_event(self, *button_clicked_name):
         # Handles the segmented button event, they always send a value with command
-        if args[0] == 'Save':
-            self.save_folder()
+        if button_clicked_name[0] == 'Save':
+            self.save_folder_to_folder_list()
         else:
             self.parent.main_frame.destroy()
 
@@ -71,7 +71,7 @@ class NewFolder:
         else:
             return True
 
-    def save_folder(self):
+    def save_folder_to_folder_list(self):
         new_folder_name = self.name_entry.get().strip()
         folder_list = get_folder_list(self.account_id)
         folder_string = ''

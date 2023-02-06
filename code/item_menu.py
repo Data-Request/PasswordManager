@@ -18,6 +18,7 @@ class ItemMenu:
         self.login_id = login_id
         self.landing_tabview = landing_tabview
         self.parent = parent
+        self.website_name_character_limit = 30
         self.textbox_width = 300
         self.textbox_height = 150
 
@@ -30,7 +31,6 @@ class ItemMenu:
                 self.create_basic_option_frame()
         else:
             self.create_basic_option_frame()
-        self.create_warning_label()
 
     def create_main_frame(self):
         if self.parent.name == 'Generator':
@@ -51,9 +51,9 @@ class ItemMenu:
         self.main_label = customtkinter.CTkLabel(master=self.options_frame)
         self.folder_label = customtkinter.CTkLabel(master=self.options_frame, text="Folder:")
         self.folder_menu = customtkinter.CTkOptionMenu(master=self.options_frame, values=folder_list, width=300)
-        self.login_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
-        self.login_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
-                                                       placeholder_text='Website Name')
+        self.website_name_label = customtkinter.CTkLabel(master=self.options_frame, text="Website Name:")
+        self.website_name_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
+                                                         placeholder_text='Website Name')
         self.url_label = customtkinter.CTkLabel(master=self.options_frame, text="URL:")
         self.url_entry = customtkinter.CTkEntry(master=self.options_frame, width=self.textbox_width,
                                                 placeholder_text='URL')
@@ -75,8 +75,8 @@ class ItemMenu:
         self.main_label.grid(row=0, column=0, sticky="n")
         self.folder_label.grid(row=1, column=0, pady=(15, 5), sticky="w")
         self.folder_menu.grid(row=2, column=0, pady=(0, 20), sticky="w")
-        self.login_name_label.grid(row=3, column=0, sticky="w")
-        self.login_name_entry.grid(row=4, column=0, pady=(0, 10), sticky="n")
+        self.website_name_label.grid(row=3, column=0, sticky="w")
+        self.website_name_entry.grid(row=4, column=0, pady=(0, 10), sticky="n")
         self.url_label.grid(row=5, column=0, sticky="w")
         self.url_entry.grid(row=6, column=0, pady=(0, 10), sticky="n")
         self.username_label.grid(row=7, column=0, sticky="w")
@@ -105,17 +105,13 @@ class ItemMenu:
                 decrypted_url = decrypt_text(master_key, login[0][3])
                 decrypted_username = decrypt_text(master_key, login[0][4])
                 decrypted_password = decrypt_text(master_key, login[0][5])
-                self.login_name_entry.insert(0, decrypted_login_name)
+                self.website_name_entry.insert(0, decrypted_login_name)
                 self.url_entry.insert(0, decrypted_url)
                 self.username_entry.insert(0, decrypted_username)
                 self.password_textbox.insert('end', decrypted_password)
                 self.cancel_save_button.configure(values=["Cancel", "Save", 'Delete'])
             else:  # Coming from vault tab - right menu - new login
                 self.main_label.configure(text='Add Login')
-
-    def create_warning_label(self):
-        self.warning_label = customtkinter.CTkLabel(master=self.options_frame, text='', text_color=RED)
-        self.warning_label.place(relx=0.5, rely=0.1, anchor=tkinter.S)
 
     def create_vault_option_frame(self):
         self.options_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color="transparent")
@@ -132,26 +128,26 @@ class ItemMenu:
 
         self.new_folder = NewFolder(self, self.options_frame, self.account_id)
 
-    def type_chosen_event(self, *args):
-        if args[0] == 'Folder':
+    def type_chosen_event(self, *button_clicked_name):
+        if button_clicked_name[0] == 'Folder':
             if self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
             self.new_folder = NewFolder(self, self.options_frame, self.account_id)
-        elif args[0] == 'Secure Note':
+        elif button_clicked_name[0] == 'Secure Note':
             if self.new_folder:
                 self.new_folder.destroy_new_folder_frame()
             self.secure_note = SecureNote(self.options_frame, self, self.account_id, None)
-        elif args[0] == 'Login':
+        elif button_clicked_name[0] == 'Login':
             if self.new_folder:
                 self.new_folder.destroy_new_folder_frame()
             elif self.secure_note:
                 self.secure_note.destroy_secure_note_frame()
             self.login = self.create_basic_option_frame()
 
-    def cancel_or_save_event(self, *args):
-        if args[0] == 'Cancel':
+    def cancel_or_save_event(self, *button_clicked_name):
+        if button_clicked_name[0] == 'Cancel':
             self.main_frame.destroy()
-        elif args[0] == 'Delete':
+        elif button_clicked_name[0] == 'Delete':
             self.create_delete_login_frame()
         elif self.login_id == '':
             self.save_login()
@@ -160,19 +156,22 @@ class ItemMenu:
             self.main_frame.destroy()
 
     def get_all_login_fields(self):
-        login_name = self.login_name_entry.get().strip()
-        username = self.username_entry.get().strip()
-        key = self.password_textbox.get('0.0', 'end').strip()
+        website_name = self.website_name_entry.get().strip()
         url = self.url_entry.get().strip()
+        username = self.username_entry.get().strip()
+        password = self.password_textbox.get('0.0', 'end').strip()
         folder = self.folder_menu.get()
-        return login_name, username, key, url, folder
+        return website_name,  url, username, password, folder
 
     def edit_login(self):
-        self.warning_label.configure(text='')
-        login_name, url, username, password, folder = self.get_all_login_fields()
+        website_name, url, username, password, folder = self.get_all_login_fields()
+
+        self.reset_all_labels()
+        if self.check_invalid_input(website_name, url, username, password):
+            return
 
         master_key = get_master_key_with_account_id(self.account_id)[0]
-        encrypted_login_name = encrypt_text(master_key, login_name)
+        encrypted_login_name = encrypt_text(master_key, website_name)
         encrypted_url = encrypt_text(master_key, url)
         encrypted_username = encrypt_text(master_key, username)
         encrypted_password = encrypt_text(master_key, password)
@@ -180,21 +179,14 @@ class ItemMenu:
         self.parent.update_folder_frame()
 
     def save_login(self):
-        self.warning_label.configure(text='')
-        login_name, username, password, url, folder = self.get_all_login_fields()
+        website_name, url, username, password, folder = self.get_all_login_fields()
 
-        if login_name == '':
-            self.warning_label.configure(text='Website Name is blank.')
-            return
-        elif url == '':
-            self.warning_label.configure(text='URL is blank.')
-            return
-        elif username == '':
-            self.warning_label.configure(text='Username is blank.')
+        self.reset_all_labels()
+        if self.check_invalid_input(website_name, url, username, password):
             return
 
         master_key = get_master_key_with_account_id(self.account_id)[0]
-        encrypted_login_name = encrypt_text(master_key, login_name)
+        encrypted_login_name = encrypt_text(master_key, website_name)
         encrypted_url = encrypt_text(master_key, url)
         encrypted_username = encrypt_text(master_key, username)
         encrypted_password = encrypt_text(master_key, password)
@@ -207,6 +199,52 @@ class ItemMenu:
         else:
             self.main_frame.destroy()
             self.parent.update_folder_frame()
+
+    def reset_all_labels(self):
+        self.website_name_label.configure(text='Website Name:')
+        self.url_label.configure(text='URL:')
+        self.username_label.configure(text='Username:')
+        self.password_label.configure(text='Password:')
+
+    def check_invalid_input(self, website_name, url, username, password):
+        if website_name == '':
+            self.refresh_frames()
+            self.website_name_label.configure(text='Website Name:            Website Name is blank.')
+            self.insert_all_fields(website_name, url, username, password)
+            return True
+        elif len(website_name) > self.website_name_character_limit:
+            self.refresh_frames()
+            self.website_name_label.configure(text='Website Name:            Website Name too long.')
+            self.insert_all_fields(website_name, url, username, password)
+            return True
+        elif url == '':
+            self.refresh_frames()
+            self.url_label.configure(text='URL:                     URL is blank.')
+            self.insert_all_fields(website_name, url, username, password)
+            return True
+        elif username == '':
+            self.refresh_frames()
+            self.username_label.configure(text='Username:                Username is blank.')
+            self.insert_all_fields(website_name, url, username, password)
+            return True
+        elif password == '':
+            self.refresh_frames()
+            self.password_label.configure(text='Password:                Password is blank.')
+            self.insert_all_fields(website_name, url, username, password)
+            return True
+        else:
+            return False
+
+    def insert_all_fields(self, website_name, url, username, password):
+        self.website_name_entry.insert(0, website_name)
+        self.url_entry.insert(0, url)
+        self.username_entry.insert(0, username)
+        self.password_textbox.insert('end', password)
+
+    def refresh_frames(self):
+        self.main_frame.destroy()
+        self.create_main_frame()
+        self.create_basic_option_frame()
 
     def create_delete_login_frame(self):
         self.delete_login_frame = customtkinter.CTkFrame(master=self.options_frame, fg_color=GREEN)
@@ -221,10 +259,10 @@ class ItemMenu:
         delete_label.grid(row=0, column=0, padx=50, pady=(20, 20), sticky="n")
         delete_button.grid(row=1, column=0, pady=(0, 20), sticky="n")
 
-    def delete_event(self, *args):
+    def delete_event(self, *button_clicked_name):
         # Handles the segmented button event, they always send a value with command
         # Deletes the secure note from database, and resets screen
-        if args[0] == 'Yes':
+        if button_clicked_name[0] == 'Yes':
             delete_login(self.login_id)
         self.main_frame.destroy()
         self.parent.update_folder_frame()

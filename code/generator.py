@@ -108,22 +108,22 @@ class GeneratorTab:
         # Create Extras Slider Frame
         self.extras_slider_frame = customtkinter.CTkFrame(master=self.generator_tabview.tab('Password'),
                                                           fg_color='transparent')
-        self.extras_slider_frame.grid(row=2, column=0, padx=(40, 0), pady=(25, 0), sticky="n")
-        self.extras_slider_frame.grid_columnconfigure(0, weight=1)
-        self.extras_slider_frame.grid_rowconfigure(0, weight=1)
         self.min_numbers_label = customtkinter.CTkLabel(master=self.extras_slider_frame)
-        self.min_numbers_label.grid(row=0, column=0, sticky="w")
         self.min_numbers_slider = customtkinter.CTkSlider(master=self.extras_slider_frame, state='disabled',
-                                                          command=self.update_min_number,
+                                                          command=self.min_number_slider_event,
                                                           from_=self.min_min_num, to=self.max_min_num,
                                                           number_of_steps=self.max_min_num - self.min_min_num)
-        self.min_numbers_slider.grid(row=0, column=1, sticky="e")
         self.min_symbol_label = customtkinter.CTkLabel(master=self.extras_slider_frame)
-        self.min_symbol_label.grid(row=1, column=0, pady=(15, 0), columnspan=1, sticky="w")
         self.min_symbol_slider = customtkinter.CTkSlider(master=self.extras_slider_frame, state='disabled',
-                                                         command=self.update_min_special,
+                                                         command=self.min_symbol_slider_event,
                                                          from_=self.min_symbols_num, to=self.max_symbols_num,
                                                          number_of_steps=self.max_symbols_num - self.min_symbols_num)
+        self.extras_slider_frame.grid(row=2, column=0, padx=(30, 0), pady=(25, 0), sticky="n")
+        self.extras_slider_frame.grid_columnconfigure(0, weight=1)
+        self.extras_slider_frame.grid_rowconfigure(0, weight=1)
+        self.min_numbers_label.grid(row=0, column=0, padx=(0, 10), sticky="w")
+        self.min_numbers_slider.grid(row=0, column=1, sticky="e")
+        self.min_symbol_label.grid(row=1, column=0, pady=(15, 0), padx=(0, 10), sticky="w")
         self.min_symbol_slider.grid(row=1, column=1, pady=(15, 0), sticky="e")
 
         # Set Defaults
@@ -234,7 +234,8 @@ class GeneratorTab:
         text = 'Length:'
         length = int(self.length_slider.get())
         self.length_label.configure(text=f'{text:7} {length:3d}')
-        self.update_min_number_and_special()
+        self.update_max_min_number()
+        self.update_max_min_symbol()
         self.create_password()
 
     def update_words(self, *args):
@@ -243,31 +244,34 @@ class GeneratorTab:
         self.passphrase_length_label.configure(text=f'{text:7} {length:2d}')
         self.create_passphrase()
 
-    def update_min_number(self, *args):
+    def min_number_slider_event(self, *args):
         self.min_numbers_label.configure(text=f'Minimum Numbers: {int(self.min_numbers_slider.get())}')
         self.create_password()
 
-    def update_min_special(self, *args):
+    def min_symbol_slider_event(self, *args):
         self.min_symbol_label.configure(text=f'Minimum Symbols: {int(self.min_symbol_slider.get())}')
         self.create_password()
 
-    def update_min_number_and_special(self):
+    def update_max_min_number(self):
         self.max_min_num = self.password_length // 10
-        self.max_symbols_num = self.password_length // 10
         # Next parts stops from division of zero errors when updating the bar
         if self.max_min_num < 1:
             self.max_min_num = 1
-        if self.max_symbols_num < 1:
-            self.max_symbols_num = 1
         current_min_num = int(self.min_numbers_slider.get())
-        current_symbol_num = int(self.min_symbol_slider.get())
         if current_min_num > self.max_min_num:
             current_min_num = self.max_min_num
-        if current_symbol_num > self.max_symbols_num:
-            current_symbol_num = self.max_symbols_num
         self.min_numbers_slider.configure(to=self.max_min_num, number_of_steps=self.max_min_num - self.min_min_num)
         self.min_numbers_slider.set(current_min_num)
         self.min_numbers_label.configure(text=f'Minimum Numbers: {int(self.min_numbers_slider.get())}')
+
+    def update_max_min_symbol(self):
+        self.max_symbols_num = self.password_length // 10
+        # Next parts stops from division of zero errors when updating the bar
+        if self.max_symbols_num < 1:
+            self.max_symbols_num = 1
+        current_symbol_num = int(self.min_symbol_slider.get())
+        if current_symbol_num > self.max_symbols_num:
+            current_symbol_num = self.max_symbols_num
         self.min_symbol_slider.configure(to=self.max_symbols_num,
                                          number_of_steps=self.max_symbols_num - self.min_symbols_num)
         self.min_symbol_label.configure(text=f'Minimum Symbols: {int(self.min_symbol_slider.get())}')
@@ -358,9 +362,8 @@ class GeneratorTab:
         if self.symbols_checkbox.get() == 1:
             char_list += self.valid_symbols
         if self.ambiguous_checkbox.get() == 1:
-            char_list = char_list.replace('l', '').replace('1', '').replace('I', '').replace('o', '').replace('O',
-                                                                                                              '').replace(
-                '0', '')
+            char_list = char_list.replace('l', '').replace('1', '').replace('I', '')
+            char_list = char_list.replace('o', '').replace('O', '').replace('0', '')
         return char_list
 
     def create_password(self):
@@ -368,11 +371,10 @@ class GeneratorTab:
         char_list = self.create_required_char_list()
         min_num = self.min_numbers_slider.get()
         min_symbol = self.min_symbol_slider.get()
-        self.password_strength_frame.reset_scoring_variables()
+        password = ''
 
         # If not using numbers or symbols then create basic password
         if self.numbers_checkbox.get() == 0 and self.symbols_checkbox.get() == 0:
-            password = ''
             for index in range(0, self.password_length):
                 char = secrets.choice(char_list)
                 password += char
@@ -402,11 +404,13 @@ class GeneratorTab:
                         requirements_meet = True
 
         # Update scoring variables, main textbox, and strength frame
+        self.password_strength_frame.set_scoring_variables()
         self.password_strength_frame.update_scoring_variables(self.valid_symbols, password)
         self.update_main_textbox(password)
         self.password_strength_frame.calc_password_strength_score(self.password_length)
 
     def update_history(self):
+        # Updates password/passphrase history in db
         password = self.main_textbox.get('0.0', 'end').strip()
         master_key = get_master_key_with_account_id(self.account_id)[0]
         encrypted_password = encrypt_text(master_key, password)
@@ -420,6 +424,7 @@ class GeneratorTab:
         create_new_history(self.account_id, encrypted_password)
 
     def check_if_already_entered(self, master_key, encrypted_password):
+        # Checks if password already exists in the history db, avoids re-adding
         history = get_all_from_history(self.account_id)
         decrypted_input_password = decrypt_text(master_key, encrypted_password)
         for history_row in history:

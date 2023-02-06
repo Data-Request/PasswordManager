@@ -30,7 +30,6 @@ class LandingPage(customtkinter.CTk):
         self.initialize_account_login()
 
     def create_tabview(self):
-        # Creates the main tabview
         self.landing_page_tabview = customtkinter.CTkTabview(self, height=self.tabview_height, width=self.tabview_width,
                                                              corner_radius=15, segmented_button_selected_color=GREEN,
                                                              border_width=3, border_color=GREEN, state='disabled',
@@ -44,7 +43,6 @@ class LandingPage(customtkinter.CTk):
         self.landing_page_tabview.tab('Vault').grid_columnconfigure(0, weight=1)
 
     def create_vault_image_frame(self):
-        # Create and place vault image frame
         self.vault_image_frame = customtkinter.CTkFrame(master=self.landing_page_tabview.tab('Vault'),
                                                         fg_color="transparent")
         self.vault_image_button = customtkinter.CTkButton(master=self.vault_image_frame, text='',

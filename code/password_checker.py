@@ -28,11 +28,11 @@ class PasswordCheckerTab:
         self.main_textbox = customtkinter.CTkTextbox(master=self.main_frame,
                                                      width=self.main_textbox_width, font=TEXTBOX_FONT,
                                                      height=self.main_textbox_height, corner_radius=15)
-        self.check_button = customtkinter.CTkButton(master=self.main_frame, text='Check Password',
-                                                    command=self.check_password, text_color=BLACK, width=300)
+        self.check_password_button = customtkinter.CTkButton(master=self.main_frame, text='Check Password',
+                                                             command=self.check_password_event, text_color=BLACK, width=300)
         self.main_frame.place(relx=0.5, rely=0.01, anchor=tkinter.N)
         self.main_textbox.grid(row=0, column=0, pady=(0, 15), sticky="n")
-        self.check_button.grid(row=1, column=0, pady=(0, 30), sticky="n")
+        self.check_password_button.grid(row=1, column=0, pady=(0, 30), sticky="n")
 
     def create_additions_frame(self):
         self.additions_frame = customtkinter.CTkFrame(master=self.main_frame, fg_color='transparent')
@@ -248,10 +248,10 @@ class PasswordCheckerTab:
         self.create_additions_frame()
         self.create_subtractions_frame()
 
-    def check_password(self):
+    def check_password_event(self):
         password = self.main_textbox.get('0.0', 'end').strip()
         password_length = len(password)
-        self.password_strength_frame.reset_scoring_variables()
+        self.password_strength_frame.set_scoring_variables()
         self.password_strength_frame.update_scoring_variables(self.valid_symbols, password)
         self.password_strength_frame.calc_password_strength_score(password_length)
         self.refresh_addition_subtraction_frames()

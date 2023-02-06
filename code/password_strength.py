@@ -13,7 +13,7 @@ class PasswordStrength:
         self.landing_tabview = landing_tabview
 
         # Initialize
-        self.reset_scoring_variables()
+        self.set_scoring_variables()
         self.create_generator_password_strength_frame()
 
     def create_generator_password_strength_frame(self):
@@ -32,7 +32,7 @@ class PasswordStrength:
         self.strength_label.grid(row=0, column=0, sticky="ew")
         self.strength_bar.grid(row=1, column=0, pady=(0, 20), sticky="ew")
 
-    def reset_scoring_variables(self):
+    def set_scoring_variables(self):
         self.num_of_uppercase_chars = 0
         self.num_of_lowercase_chars = 0
         self.num_of_num_chars = 0
@@ -111,7 +111,6 @@ class PasswordStrength:
         for index in valid_chars:
             if valid_chars[index] > 5:
                 self.repeated_characters += int(valid_chars[index] * 0.5)
-
 
     def calc_password_strength_score(self, password_length):
         # Positive Scores

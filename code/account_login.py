@@ -24,7 +24,7 @@ class AccountLogin:
         self.password_entry = customtkinter.CTkEntry(master=self.login_frame, placeholder_text="Master Password")
         self.login_button = customtkinter.CTkButton(master=self.login_frame, text_color=BLACK,
                                                     text='                             Log in', image=KEY_IMAGE,
-                                                    compound='left', command=self.validate_log_info, anchor='w')
+                                                    compound='left', command=self.validate_login, anchor='w')
         self.verify_label = customtkinter.CTkLabel(master=self.login_frame, text_color=WHITE, width=300,
                                                    text='Your vault is locked. Verify your identity to continue.')
         self.login_frame.place(relx=0.5, rely=0.36, anchor=tkinter.N)
@@ -38,7 +38,7 @@ class AccountLogin:
         self.login_button.grid(row=5, column=0, pady=(0, 20), sticky="ew")
         self.verify_label.grid(row=6, column=0, pady=(0, 20), sticky="ew")
 
-    def validate_log_info(self):
+    def validate_login(self):
         # Checks db for an account with same email
         email_input = self.email_entry.get()
         email_input.lower()

@@ -69,14 +69,14 @@ class SecureNote:
         # This is called from parent to kill child
         self.secure_note_frame.destroy()
 
-    def cancel_save_delete_event(self, *args):
+    def cancel_save_delete_event(self, *button_clicked_name):
         # Handles the segmented button event, they always send a value with command
-        if args[0] == 'Save':
+        if button_clicked_name[0] == 'Save':
             if not self.note_id:
                 self.save_note()
             else:
                 self.edit_note()
-        elif args[0] == 'Cancel':
+        elif button_clicked_name[0] == 'Cancel':
             if self.note_id:
                 self.destroy_secure_note_frame()
             else:
@@ -84,10 +84,14 @@ class SecureNote:
         else:
             self.create_delete_note_frame()
 
-    def save_note(self):
-        # Grabs note and encrypts then stores in db
+    def grab_note_input(self):
         note_name_input = self.name_entry.get().strip()
         note_body_input = self.note_textbox.get('0.0', 'end').strip()
+        return note_name_input, note_body_input
+
+    def save_note(self):
+        # Grabs note and encrypts then stores in db
+        note_name_input, note_body_input = self.grab_note_input()
         if self.check_invalid_input(note_name_input, note_body_input):
             return
         master_key = get_master_key_with_account_id(self.account_id)[0]
@@ -98,8 +102,7 @@ class SecureNote:
 
     def edit_note(self):
         # Grab note inputs and the master_key from db, then encrypt both and update note in db
-        note_name_input = self.name_entry.get().strip()
-        note_body_input = self.note_textbox.get('0.0', 'end').strip()
+        note_name_input, note_body_input = self.grab_note_input()
         if self.check_invalid_input(note_name_input, note_body_input):
             return
         master_key = get_master_key_with_account_id(self.account_id)[0]
@@ -113,21 +116,21 @@ class SecureNote:
         self.name_label.configure(text='Name:')
         self.note_label.configure(text='Secure Note:')
         self.name_entry.configure(text_color=WHITE)
-        invalid_entry = False
         if note_name == '':
             self.refresh_and_insert_all_fields(note_name, note_body)
             self.name_label.configure(text='Name:                 Name is blank.')
-            invalid_entry = True
+            return True
         elif note_body == '':
             self.refresh_and_insert_all_fields(note_name, note_body)
             self.note_label.configure(text='Secure Note:          Secure Note is blank.')
-            invalid_entry = True
+            return True
         elif len(note_name) > self.note_name_character_limit:
             self.refresh_and_insert_all_fields(note_name, note_body)
             self.name_label.configure(text='Name:                 Name entered too long.')
             self.name_entry.configure(text_color=RED)
-            invalid_entry = True
-        return invalid_entry
+            return True
+        else:
+            return False
 
     def refresh_and_insert_all_fields(self, note_name, note_body):
         # Refresh the page so the buttons gets updated info, inserts all input back into fields for user
@@ -152,10 +155,10 @@ class SecureNote:
         delete_label.grid(row=0, column=0, padx=50, pady=(20, 20), sticky="n")
         delete_button.grid(row=1, column=0, pady=(0, 20), sticky="n")
 
-    def delete_event(self, *args):
+    def delete_event(self, *button_clicked_name):
         # Handles the segmented button event, they always send a value with command
         # Deletes the secure note from database, and resets screen
-        if args[0] == 'Yes':
+        if button_clicked_name[0] == 'Yes':
             delete_secure_note(self.note_id)
         self.destroy_secure_note_frame()
         self.parent.update_secure_note_frame()

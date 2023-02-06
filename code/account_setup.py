@@ -62,25 +62,25 @@ class AccountSetup:
 
     def create_new_account(self):
         # Gets user input and then creates an account in the db
-        email = self.new_email_input.get().strip()
-        email.lower()
-        master_password = self.new_master_password_input.get().strip()
-        master_password_verify = self.new_master_password_verify_input.get().strip()
+        email_input = self.new_email_input.get().strip()
+        email_input.lower()
+        master_password_input = self.new_master_password_input.get().strip()
+        master_password_verify_input = self.new_master_password_verify_input.get().strip()
 
-        if self.check_for_invalid_entries(email, master_password, master_password_verify):
-            self.refresh_and_insert_fields(email, master_password, master_password_verify)
+        if self.check_for_invalid_entries(email_input, master_password_input, master_password_verify_input):
+            self.refresh_and_insert_fields(email_input, master_password_input, master_password_verify_input)
             return
 
-        email_row = get_email_with_email(email)
+        email_row = get_email_with_email(email_input)
         if email_row is not None:
-            self.refresh_and_insert_fields(email, master_password, master_password_verify)
+            self.refresh_and_insert_fields(email_input, master_password_input, master_password_verify_input)
             self.warning_label.configure(text='Email already in use.')
             return
 
         salt = os.urandom(32)
-        master_key = generate_master_key(salt, master_password)
-        master_password_hash = generate_master_password_hash(master_password, master_key)
-        create_new_user_account(email, salt, master_key, master_password_hash)
+        master_key = generate_master_key(salt, master_password_input)
+        master_password_hash = generate_master_password_hash(master_password_input, master_key)
+        create_new_user_account(email_input, salt, master_key, master_password_hash)
         self.destroy_all_widgets()
         self.parent.initialize_account_login()
 
@@ -91,23 +91,23 @@ class AccountSetup:
 
     def check_for_invalid_entries(self, email, master_password, master_password_verify):
         # Checks for blank fields and mismatched passwords
-        invalid_entries = False
         if email == '':
             self.warning_label.configure(text='Email is blank.')
-            invalid_entries = True
+            return True
         elif master_password == '':
             self.warning_label.configure(text='Password is blank.')
-            invalid_entries = True
+            return True
         elif master_password_verify == '':
             self.warning_label.configure(text='Please verify password.')
-            invalid_entries = True
+            return True
         elif not validate_email(email):
             self.warning_label.configure(text='Not a valid email.')
-            invalid_entries = True
+            return True
         elif master_password != master_password_verify:
             self.warning_label.configure(text='Passwords do not match.')
-            invalid_entries = True
-        return invalid_entries
+            return True
+        else:
+            return False
 
     def refresh_and_insert_fields(self, email, master_password, master_password_verify):
         # Refresh the page and inserts the entered text back into each field
